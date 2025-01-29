@@ -41,8 +41,8 @@ const Landing = () => {
         />
       </section>
 
-      <section className="bg-neutral-200 p-8 rounded-lg mt-6 px-20">
-        <h3 className="text-xl font-bold text-center">Our Top Partners</h3>
+      <section className="bg-neutral-200 p-8 rounded-2xl mt-4 px-20 ml-[100px] mr-[100px]">
+        <h3 className="text-xl font-semibold text-center font-[Poppins] -ml-28">Our Top Partners</h3>
         <div className="flex justify-center gap-6 mt-4">
           {partners.map((partner, index) => (
             <Partner key={index} {...partner} />
