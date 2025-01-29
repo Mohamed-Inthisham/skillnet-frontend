@@ -1,4 +1,5 @@
 import React from "react";
+import Button from "../../components/Button";
 import logo from "../../assets/Logo.webp";
 
 const CommonHeader = () => {
@@ -7,9 +8,7 @@ const CommonHeader = () => {
       <h1 className="text-xl font-bold">
         <img src={logo} alt="SkillNet Logo" className="h-8" />
       </h1>
-      <button className="px-4 py-2 border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition">
-        Contact Us
-      </button>
+      <Button text="Contact Us" variant="outline" />
     </nav>
   );
 };
