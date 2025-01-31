@@ -3,6 +3,7 @@ import Partner from "../../components/Partners";
 import CommonHeader from "../../layout/CommonHeader";
 import image from "../../../src/assets/image.webp";
 import Button from "../../components/Button";
+import Footer from "../../layout/Footer";
 const Landing = () => {
   const partners = [
     { logo: "/src/assets/Ellipse 1.webp", name: "IFS" },
@@ -16,7 +17,6 @@ const Landing = () => {
     <>
       <CommonHeader />
       <section className="bg-neutral-200  rounded-2xl flex flex-col md:flex-row items-center justify-between gap-8 mr-[100px] ml-[100px]">
-        {/* Added ml-12 to shift text slightly to the right */}
         <div className="max-w-lg md:ml-28 font-[Poppins] tracking-wider">
           <h2 className="text-4xl font-bold leading-normal mt-16 [word-spacing:6px]">
             Are You <span className="text-blue-500">Ready</span> For{" "}
@@ -33,7 +33,6 @@ const Landing = () => {
           </div>
         </div>
 
-        {/* Ensure the image stays inside the box by removing absolute positioning */}
         <img
           src={image}
           alt="SkillNet"
@@ -42,13 +41,16 @@ const Landing = () => {
       </section>
 
       <section className="bg-neutral-200 p-8 rounded-2xl mt-4 px-20 ml-[100px] mr-[100px]">
-        <h3 className="text-xl font-semibold text-center font-[Poppins] -ml-28">Our Top Partners</h3>
+        <h3 className="text-xl font-semibold text-center font-[Poppins] -ml-28">
+          Our Top Partners
+        </h3>
         <div className="flex justify-center gap-6 mt-4">
           {partners.map((partner, index) => (
             <Partner key={index} {...partner} />
           ))}
         </div>
       </section>
+      <Footer bgColor="bg-white" textColor="text-black" />
     </>
   );
 };
