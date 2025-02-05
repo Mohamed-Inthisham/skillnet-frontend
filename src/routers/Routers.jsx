@@ -1,5 +1,5 @@
 import { Routes, Route, BrowserRouter as Router } from "react-router-dom";
-import { Landing } from "../pages";
+import { Landing,Login } from "../pages";
 
 const Routers = () => {
   return (
@@ -7,6 +7,7 @@ const Routers = () => {
       <Router>
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </Router>
     </div>
