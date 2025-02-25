@@ -1,5 +1,5 @@
 import { Routes, Route, BrowserRouter as Router } from "react-router-dom";
-import { Landing,Login } from "../pages";
+import { Landing,Login,StudentRegister } from "../pages";
 
 const Routers = () => {
   return (
@@ -8,6 +8,7 @@ const Routers = () => {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/StudentRegister" element={<StudentRegister />} />
         </Routes>
       </Router>
     </div>
