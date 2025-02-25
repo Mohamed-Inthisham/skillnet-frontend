@@ -37,6 +37,59 @@ const StudentRegister = () => {
             </div>
           </div>
         </div>
+
+        {/* Right Section - Sign Up Form */}
+        <div className="w-1/2 bg-neutral-200 p-8 rounded-lg shadow-lg mr-[100px]">
+          <h2 className="text-2xl font-bold mb-2">Sign Up</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            * have an account -{" "}
+            <span className="text-blue-500 cursor-pointer">Login</span>
+          </p>
+
+          <form className="grid grid-cols-2 gap-4">
+            <input
+              type="text"
+              placeholder="First Name"
+              className="p-3 border rounded-md"
+            />
+            <input
+              type="text"
+              placeholder="Last Name"
+              className="p-3 border rounded-md"
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              className="col-span-2 p-3 border rounded-md"
+            />
+            <input
+              type="tel"
+              placeholder="Phone"
+              className="p-3 border rounded-md"
+            />
+            <input
+              type="date"
+              placeholder="DOB"
+              className="p-3 border rounded-md"
+            />
+            <input
+              type="text"
+              placeholder="Address"
+              className="col-span-2 p-3 border rounded-md"
+            />
+            <div className="col-span-2">
+              <p className="text-sm text-gray-700 mb-2">
+                * User’s Real Picture
+              </p>
+              <button className="flex items-center gap-2 px-4 py-2 border rounded-lg text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white">
+                Click to Open 📷
+              </button>
+            </div>
+            <div className="col-span-2 flex justify-end">
+              <Button text="Register" />
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
