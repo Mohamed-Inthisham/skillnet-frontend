@@ -4,6 +4,9 @@ import Button from "../../components/Button";
 import registerImage from "../../assets/registerImage.webp";
 import phone from "../../assets/Phone.webp";
 import emails from "../../assets/Email.webp";
+import InputField from "../../components/InputField";
+import Camera from "../../assets/camera.webp";
+import { Link } from "react-router-dom";
 
 const StudentRegister = () => {
   return (
@@ -39,50 +42,49 @@ const StudentRegister = () => {
         </div>
 
         {/* Right Section - Sign Up Form */}
-        <div className="w-1/2 bg-neutral-200 p-8 rounded-lg shadow-lg mr-[100px]">
-          <h2 className="text-2xl font-bold mb-2">Sign Up</h2>
-          <p className="text-sm text-gray-600 mb-4">
-            * have an account -{" "}
-            <span className="text-blue-500 cursor-pointer">Login</span>
+        <div className="w-1/2 bg-neutral-200 p-8 rounded-lg shadow-lg mr-[100px] -mt-10 h-[700px]">
+          <h2 className="text-3xl font-semibold mb-2 text-center">Sign Up</h2>
+          <p className="text-sm text-gray-600 mb-16 text-center before:content-['*'] before:text-red-500 before:mr-1">
+            have an account -{" "}
+            <Link to="/login" className="text-blue-500 cursor-pointer">
+              Login
+            </Link>
           </p>
 
           <form className="grid grid-cols-2 gap-4">
-            <input
-              type="text"
-              placeholder="First Name"
-              className="p-3 border rounded-md"
-            />
-            <input
-              type="text"
-              placeholder="Last Name"
-              className="p-3 border rounded-md"
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              className="col-span-2 p-3 border rounded-md"
-            />
-            <input
-              type="tel"
-              placeholder="Phone"
-              className="p-3 border rounded-md"
-            />
-            <input
-              type="date"
-              placeholder="DOB"
-              className="p-3 border rounded-md"
-            />
-            <input
-              type="text"
-              placeholder="Address"
-              className="col-span-2 p-3 border rounded-md"
-            />
+            <div>
+              <p className="text-[15px] mb-2">First name</p>
+              <InputField type="text" />
+            </div>
+            <div>
+              <p className="text-[15px] mb-2">Last name</p>
+              <InputField type="text" />
+            </div>
+            <div>
+              <p className="text-[15px] mb-2">Email</p>
+              <InputField type="text" className="w-[515px]" />
+            </div>
+            <br />
+            <div>
+              <p className="text-[15px] mb-2">Phone</p>
+              <InputField type="text" />
+            </div>
+            <div>
+              <p className="text-[15px] mb-2">DOB</p>
+              <InputField type="date" />
+            </div>
+            <div>
+              <p className="text-[15px] mb-2">Address</p>
+              <InputField type="text" className="w-[515px]" />
+            </div>
             <div className="col-span-2">
-              <p className="text-sm text-gray-700 mb-2">
-                * User’s Real Picture
+              <p className="text-sm text-gray-700 mb-2 before:content-['*'] before:text-red-500 before:mr-1">
+                User’s Real Picture
               </p>
-              <button className="flex items-center gap-2 px-4 py-2 border rounded-lg text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white">
-                Click to Open 📷
+
+              <button className="flex items-center gap-2 px-4 py-2 border rounded-lg text-blue-500 border-blue-500 hover:bg-stone-100 bg-white mb-10">
+                Click to Open
+                <img src={Camera} alt="Camera Icon" className="w-5 h-5" />
               </button>
             </div>
             <div className="col-span-2 flex justify-end">
