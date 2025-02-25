@@ -2,7 +2,6 @@ import React from "react";
 import AuthCard from "../../components/AuthCard";
 import logo from "../../assets/Logo.webp";
 import graduationImg from "../../assets/graduation.webp"; 
-import CommonHeader from "../../layout/CommonHeader";
 import cornerShapeImage from "../../assets/cornerShape.webp";
 
 const LoginPage = () => {
