@@ -1,14 +1,33 @@
 import Button from "../Button";
+import InputField from "../InputField";
 
 const ContactForm = () => {
   return (
-    <div className="bg-gray-100 p-6 rounded-lg">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Feel Free to Write</h2>
+    <div className="bg-gray-100 p-6 rounded-tr-lg rounded-br-lg">
+      <h2 className="text-lg font-semibold text-gray-800 mb-4 text-center">
+        Feel Free to Write
+      </h2>
       <form className="flex flex-col gap-3">
-        <input type="text" placeholder="Name" className="p-2 border rounded-lg w-full" disabled value="Michelle Rivera" />
-        <input type="email" placeholder="Email" className="p-2 border rounded-lg w-full" disabled value="michelle.rivera@example.com" />
-        <input type="tel" placeholder="Phone" className="p-2 border rounded-lg w-full" disabled value="(319) 555-0115" />
-        <textarea placeholder="Your Message" className="p-2 border rounded-lg w-full"></textarea>
+        <div>
+          <p className="text-[15px] mb-2">Name</p>
+          <InputField type="text" />
+        </div>
+        <div>
+          <p className="text-[15px] mb-2">Email</p>
+          <InputField type="text" />
+        </div>
+        <div>
+          <p className="text-[15px] mb-2">Phone</p>
+          <InputField type="text" />
+        </div>
+        <div>
+          <p className="text-[15px] 200 mb-2">Message</p>
+          <textarea
+          placeholder="Your Message"
+          className="p-2 border rounded-lg w-full bg-white text-gray-400 opacity-90"
+        ></textarea>
+        </div>
+        
         <Button text="Send" className="w-full" />
       </form>
     </div>
