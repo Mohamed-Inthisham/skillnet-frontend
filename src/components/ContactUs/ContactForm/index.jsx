@@ -1,5 +1,5 @@
-import Button from "../Button";
-import InputField from "../InputField";
+import Button from "../../Button";
+import InputField from "../../InputField";
 
 const ContactForm = () => {
   return (
