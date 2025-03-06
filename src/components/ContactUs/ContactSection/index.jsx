@@ -1,5 +1,5 @@
 import ContactForm from "../ContactForm";
-import contactImage1 from "../../assets/contactImage.webp";
+import contactImage1 from "../../../assets/contactImage.webp";
 
 const ContactSection = () => {
   return (

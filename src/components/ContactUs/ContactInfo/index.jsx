@@ -1,7 +1,7 @@
 import React from "react";
-import Button from "../Button";
-import email from "../../assets/email_contactus.webp";
-import whatsapp from "../../assets/whatsappImage.webp";
+import Button from "../../Button";
+import email from "../../../assets/email_contactus.webp";
+import whatsapp from "../../../assets/whatsappImage.webp";
 
 const ContactInfo = () => {
   return (
