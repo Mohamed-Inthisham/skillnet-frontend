@@ -1,5 +1,5 @@
 import { Routes, Route, BrowserRouter as Router } from "react-router-dom";
-import { ContactUs, Landing,Login,StudentRegister } from "../pages";
+import { ContactUs, Landing,Login,StudentRegister, CompanyDashboard, CompanyStudents, CompanyCourses } from "../pages";
 
 const Routers = () => {
   return (
@@ -10,6 +10,11 @@ const Routers = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/StudentRegister" element={<StudentRegister />} />
           <Route path="/ContactUs" element={<ContactUs />} />
+          <Route path="/CompanyDashboard" element={<CompanyDashboard />} />
+          <Route path="/CompanyStudents" element={<CompanyStudents />} />
+          <Route path="/CompanyCourses" element={<CompanyCourses />} />
+          
+          
         </Routes>
       </Router>
     </div>
