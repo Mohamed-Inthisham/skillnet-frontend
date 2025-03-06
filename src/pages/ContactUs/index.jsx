@@ -1,4 +1,4 @@
-import ContactInfo from "../../components/ContactInfo";
+import ContactInfo from "../../components/ContactUs/ContactInfo";
 import ContactSection from "../../components/ContactUs/ContactSection";
 import Button from "../../components/Button";
 import logo from "../../assets/Logo.webp";
