@@ -5,7 +5,7 @@ import logo from "../../assets/Logo.webp";
 const Footer = ({ bgColor, textColor }) => {
   return (
     <nav
-      className={`flex justify-center items-center p-4 ${bgColor} ${textColor} border-t-2 border-gray-200 px-10 mr-[100px] ml-[100px] mb-3 font-[Poppins mt-10`}
+      className={`flex justify-center items-center p-4 ${bgColor} ${textColor} border-t-2 border-gray-200 px-10 mr-[100px] ml-[100px]  font-[Poppins mt-10`}
     >
       <h1 className="text-sm">
         <p>
