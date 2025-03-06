@@ -12,8 +12,8 @@ const StatsSection = () => (
     <div className="flex justify-center mt-4 space-x-10 ">
       {stats.map((stat, index) => (
         <div key={index} className="text-center">
-          <div className="text-3xl font-semibold text-green-700">{stat.number}</div> {/* Bigger font for numbers */}
-          <div className="text-sm font-medium text-green-700">{stat.text}</div> {/* Smaller font for text */}
+          <div className="text-3xl font-semibold text-green-700">{stat.number}</div> 
+          <div className="text-sm font-medium text-green-700">{stat.text}</div> 
         </div>
       ))}
     </div>
