@@ -1,6 +1,8 @@
 import { Routes, Route, BrowserRouter as Router } from "react-router-dom";
 import { ContactUs, Landing,Login,StudentRegister,Home, Programs } from "../pages";
 
+import { ContactUs, Landing,Login,StudentRegister, CompanyDashboard, CompanyStudents, CompanyCourses, Home } from "../pages";
+
 const Routers = () => {
   return (
     <div>
@@ -12,6 +14,11 @@ const Routers = () => {
           <Route path="/ContactUs" element={<ContactUs />} />
           <Route path="/Home" element={<Home />} />
           <Route path="/Programs" element={<Programs/>}/>
+          <Route path="/CompanyDashboard" element={<CompanyDashboard />} />
+          <Route path="/CompanyStudents" element={<CompanyStudents />} />
+          <Route path="/CompanyCourses" element={<CompanyCourses />} />
+          
+          
         </Routes>
       </Router>
     </div>
