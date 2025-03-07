@@ -12,11 +12,13 @@ const CourseCard = ({ title, provider, date, image, showEnroll = true }) => (
     <h3 className="mt-2 text-lg font-semibold text-gray-900">{title}</h3>
     <p className="text-gray-400 text-xs mt-1">Beginner • {date}</p>
     
-    {showEnroll && (
-      <div className="mt-4 flex justify-center">
-        <button className="text-blue-500 font-medium text-sm ">Enroll</button>
-      </div>
-    )}
+    <div className="mt-4 flex justify-center">
+      {showEnroll ? (
+        <button className="text-blue-500 font-medium text-sm">Enroll</button>
+      ) : (
+        <span className="text-blue-500 font-medium text-sm">Enrolled</span>
+      )}
+    </div>
   </div>
 );
 
