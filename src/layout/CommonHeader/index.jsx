@@ -1,6 +1,7 @@
 import React from "react";
 import Button from "../../components/Button";
 import logo from "../../assets/Logo.webp";
+import { Link } from "react-router-dom";
 
 const CommonHeader = () => {
   return (
@@ -8,7 +9,9 @@ const CommonHeader = () => {
       <h1 className="text-xl font-bold">
         <img src={logo} alt="SkillNet Logo" className="h-8" />
       </h1>
-      <Button text="Contact Us" variant="outline" />
+      <Link to="/ContactUs">
+        <Button text="Contact Us" variant="outline" />
+      </Link>
     </nav>
   );
 };
