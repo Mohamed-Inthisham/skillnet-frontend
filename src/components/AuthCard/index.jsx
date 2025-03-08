@@ -4,6 +4,7 @@ import Button from "../Button";
 import { FaUser, FaLock } from "react-icons/fa";
 import LockIcon from "../../assets/pwIcon.webp";
 import UserIcon from "../../assets/userIcon.webp";
+import { Link } from "react-router-dom";
 
 const AuthCard = () => {
   return (
@@ -32,7 +33,7 @@ const AuthCard = () => {
         </div>
         <p className="text-sm text-black mb-4">
           Don't have an account?{" "}
-          <span className="text-blue-500 cursor-pointer">Register</span>
+          <span className="text-blue-500 cursor-pointer"><Link Link to="/StudentRegister">Register</Link></span>
         </p>
         <Button text="Login" className="w-full" />
       </form>
