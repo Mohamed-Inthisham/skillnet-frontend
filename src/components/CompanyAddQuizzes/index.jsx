@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import CompanyHeader from "../../layout/CompanyHeader";
+
 
 const CompanyAddQuizzes = () => {
   const [questions, setQuestions] = useState([
