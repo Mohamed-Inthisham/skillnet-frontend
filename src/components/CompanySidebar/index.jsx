@@ -51,6 +51,7 @@
 
 import React from "react";
 import { FaFacebook, FaInstagram, FaTwitter, FaGoogle } from "react-icons/fa";
+import { FaX } from "react-icons/fa6";
 import { NavLink } from "react-router-dom";
 
 const CompanySidebar = () => {
@@ -58,40 +59,41 @@ const CompanySidebar = () => {
     { name: "Dashboard", path: "/CompanyDashboard" },
     { name: "Courses", path: "/CompanyCourses" },
     { name: "Students", path: "/CompanyStudents" },
-    { name: "Recruitment", path: "/" },
-    { name: "Settings", path: "/" },
+    { name: "Recruitment", path: "/CompanyRecruitment" },
+    { name: "Settings", path: "*" },
   ];
 
   return (
-    <div className="space-x-4 text-blue-500">
-      <div className="flex justify-center">
-        <nav className="w-64 h-screen bg-gray-100 p-4">
-          <ul>
-            {menuItems.map((item) => (
-              <li key={item.name} className="mb-2">
-                <NavLink
-                  to={item.path}
-                  className={({ isActive }) =>
-                    `block w-full py-2 px-4 rounded-lg cursor-pointer transition ${
-                      isActive ? "bg-white shadow-sm font-bold text-blue-500" : "hover:bg-gray-200"
-                    }`
-                  }
-                >
-                  {item.name}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-        </nav>
+    <div className="w-64 h-screen bg-gray-100 p-4 flex flex-col justify-between">
+      <nav>
+        <ul>
+          {menuItems.map((item) => (
+            <li key={item.name} className="mb-2">
+              <NavLink
+                to={item.path}
+                className={({ isActive }) =>
+                  `block w-full py-2 px-4 rounded-lg cursor-pointer transition ${
+                    isActive ? "bg-white shadow-sm font-bold text-blue-500" : "hover:bg-gray-200"
+                  }`
+                }
+              >
+                {item.name}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* Social Media Icons */}
+      <div className="flex justify-center space-x-4 text-blue-500 mt-4">
+        <FaFacebook size={20} />
+        <FaInstagram size={20} />
+        <FaX size={20} />
+        <FaGoogle size={20} />
       </div>
-          <div className="flex justify-center space-x-4 text-blue-500">
-            <FaFacebook size={20} />
-            <FaInstagram size={20} />
-            <FaTwitter size={20} />
-            <FaGoogle size={20} />
-         </div>
     </div>
   );
 };
 
 export default CompanySidebar;
+

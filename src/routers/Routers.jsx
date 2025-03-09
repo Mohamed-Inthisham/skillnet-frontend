@@ -1,5 +1,5 @@
 import { Routes, Route, BrowserRouter as Router } from "react-router-dom";
-import { ContactUs, Landing,Login,StudentRegister, CompanyDashboard, CompanyStudents, CompanyCourses, Home, Programs, MyLearnings, CompanyAddCourses} from "../pages";
+import { ContactUs, Landing,Login,StudentRegister, CompanyDashboard, CompanyStudents, CompanyCourses, Home, Programs, MyLearnings, CompanyRecruitment, CompanyAddCourses} from "../pages";
 
 const Routers = () => {
   return (

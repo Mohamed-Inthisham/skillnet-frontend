@@ -10,3 +10,5 @@ export { default as CompanyDashboard } from "./CompanyDashboard";
 export { default as CompanyStudents } from "./CompanyStudents";
 export { default as CompanyCourses } from "./CompanyCourses";
 export { default as CompanyAddCourses } from "./CompanyAddCourses";
+
+export { default as CompanyRecruitment } from "./CompanyRecruitment";
