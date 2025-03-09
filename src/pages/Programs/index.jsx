@@ -19,7 +19,7 @@ const ProgramsPage = () => {
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col font-[Poppins]">
       <UserHeader />
-
+      
       <div className="flex justify-center mt-6 border-b border-gray-300">
         <button
           className={`px-6 py-2 text-lg font-medium cursor-pointer ${
