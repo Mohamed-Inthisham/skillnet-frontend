@@ -4,6 +4,7 @@ import CommonHeader from "../../layout/CommonHeader";
 import image from "../../../src/assets/image.webp";
 import Button from "../../components/Button";
 import Footer from "../../layout/Footer";
+import { Link } from "react-router-dom";
 const Landing = () => {
   const partners = [
     { logo: "/src/assets/Ellipse 1.webp", name: "IFS" },
@@ -29,7 +30,9 @@ const Landing = () => {
             assessments to make your certifications truly impactful.
           </p>
           <div className="mt-5">
-            <Button text="Join With Us" variant="outline" />
+            <Link to="/login">
+              <Button text="Join With Us" variant="outline" />
+            </Link>
           </div>
         </div>
 
