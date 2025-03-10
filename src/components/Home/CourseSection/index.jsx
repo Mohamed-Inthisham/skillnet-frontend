@@ -14,7 +14,7 @@ const CourseSection = () => (
         { title: 'Cybersecurity Fundamentals', provider: 'Industrial Systems', date: 'Jan 3, 2025', image: cs },
         { title: 'Kubernetes Fundamentals', provider: 'Epic SL', date: 'Jan 4, 2025', image: kubernet }
       ].map((course, index) => (
-        <CourseCard key={index} {...course} showEnroll={false} />
+        <CourseCard key={index} {...course} status="hidden" />
       ))}
     </div>
     <div className="text-end mt-6">
