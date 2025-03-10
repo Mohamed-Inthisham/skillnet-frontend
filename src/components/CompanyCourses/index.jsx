@@ -14,6 +14,7 @@ const courses = [
 ];
 
 const CompanyCourses = () => {
+  
   return (
     <div className="p-6 bg-white shadow-lg rounded-lg">
       {/* Header Section */}
@@ -21,22 +22,22 @@ const CompanyCourses = () => {
       
       {/* Action Buttons */}
       <div className="flex space-x-6 mb-4">
-        <button className="bg-blue-500 text-white px-4 py-2 rounded-md flex items-center">
+        <button className="bg-blue-500 text-white px-4 py-2 rounded-md flex items-center hover:bg-blue-600">
           Add Course <FaPlus className="ml-2" />
         </button>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded-md flex items-center">
+        <button className="bg-blue-500 text-white px-4 py-2 rounded-md flex items-center hover:bg-blue-600">
           Add Fluency Test <FaPlus className="ml-2" />
         </button>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded-md flex items-center">
+        <button className="bg-blue-500 text-white px-4 py-2 rounded-md flex items-center hover:bg-blue-600">
           Add Quiz <FaPlus className="ml-2" />
         </button>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded-md flex items-center">
+        <button className="bg-blue-500 text-white px-4 py-2 rounded-md flex items-center hover:bg-blue-600">
           Add Certificate <FaPlus className="ml-2" />
         </button>
       </div>
 
       {/* Course Table */}
-      <table className="w-full border-collapse">
+      {/* <table className="w-full border-collapse">
         <thead>
           <tr className="bg-gray-200 text-gray-700">
             <th className="p-2 text-left">Course Name</th>
@@ -62,7 +63,42 @@ const CompanyCourses = () => {
             </tr>
           ))}
         </tbody>
+      </table> */}
+
+<div className="overflow-x-auto shadow-md rounded-lg">
+      <table className="w-full border-collapse bg-white rounded-lg">
+        <thead>
+          <tr className="bg-gray-200 text-gray-700 text-sm uppercase">
+            <th className="p-3 text-left">Course Name</th>
+            <th className="p-3 text-center">Lessons</th>
+            <th className="p-3 text-center">Total Time</th>
+            <th className="p-3 text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {courses.map((course, index) => (
+            <tr
+              key={index}
+              className={`border-b ${
+                index % 2 === 0 ? "bg-gray-100" : "bg-white"
+              } hover:bg-gray-200 transition`}
+            >
+              <td className="p-3">{course.name}</td>
+              <td className="p-3 text-center">{course.lessons}</td>
+              <td className="p-3 text-center">{course.time}</td>
+              <td className="p-3 flex justify-center space-x-3">
+                <button className="text-blue-500 hover:text-blue-700 transition">
+                  <FaEye size={18} />
+                </button>
+                <button className="text-red-500 hover:text-red-700 transition">
+                  <FaTrash size={18} />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
       </table>
+    </div>
     </div>
   );
 };
