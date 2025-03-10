@@ -19,7 +19,7 @@ const Students = () => {
       <h2 className="text-xl font-bold text-gray-800 mb-4">Students</h2>
 
       {/* Certificate Count Box */}
-      <div className="bg-gray-100 py-4 px-8 rounded-md mb-4 text-center w-fit mx-auto">
+      <div className="bg-gray-100 py-4 px-8 rounded-md mb-4 text-center w-fit mx-auto border-2 border-blue-200">
           <h2 className="text-gray-600">No. of Certificates </h2>
           <p className="text-xl font-bold">14 Certificates</p>
       </div>

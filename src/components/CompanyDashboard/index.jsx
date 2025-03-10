@@ -12,15 +12,15 @@ const CompanyDashboard = () => {
     <div className="p-4">
       {/* Top Stats Section */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-100 p-4 rounded-lg text-center">
+        <div className="bg-gray-100 p-4 rounded-lg text-center border-2 border-blue-200">
           <h2 className="text-gray-600">No. of Courses</h2>
           <p className="text-xl font-bold">5 Courses</p>
         </div>
-        <div className="bg-gray-100 p-4 rounded-lg text-center">
+        <div className="bg-gray-100 p-4 rounded-lg text-center border-2 border-blue-200">
           <h2 className="text-gray-600">Total Students</h2>
           <p className="text-xl font-bold">42 Students</p>
         </div>
-        <div className="bg-gray-100 p-4 rounded-lg text-center">
+        <div className="bg-gray-100 p-4 rounded-lg text-center border-2 border-blue-200">
           <h2 className="text-gray-600">No. of JDs</h2>
           <p className="text-xl font-bold">12 JDs</p>
         </div>
@@ -29,25 +29,25 @@ const CompanyDashboard = () => {
       {/* Popular Courses */}
       <h2 className="text-lg font-bold mb-2">Popular Courses</h2>
       <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-8 rounded-lg shadow">
+        <div className="bg-white p-8 rounded-lg shadow-lg border-2 border-blue-200">
           <img src={java} alt="Java" className="w-55 mx-auto mb-2" />
           <h3 className="text-left font-semibold">JAVA</h3>
           <h3 className="text-left text-gray-500">Introduction to JAVA</h3>
           <p className="text-left text-sm text-gray-500">8 lessons - 5 hours</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow">
+        <div className="bg-white p-4 rounded-lg shadow-lg border-2 border-blue-200">
           <img src={cpp} alt="C++" className="w-45 mx-auto mb-2" />
           <h3 className="text-left font-semibold">C++</h3>
           <h3 className="text-left text-gray-500">Introduction to C++</h3>
           <p className="text-left text-sm text-gray-500">11 lessons - 7 hours</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow">
+        <div className="bg-white p-4 rounded-lg shadow-lg border-2 border-blue-200">
           <img src={react} alt="React" className="w-35 mx-auto mt-4 mb-10" />
           <h3 className="text-left font-semibold">React</h3>
           <h3 className="text-left text-gray-500">React Intermediate</h3>
           <p className="text-left text-sm text-gray-500">6 lessons - 4 hours</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow">
+        <div className="bg-white p-4 rounded-lg shadow-lg border-2 border-blue-200">
           <img src={python} alt="React" className="w-45 mx-auto  mb-2" />
           <h3 className="text-left font-semibold">python</h3>
           <h3 className="text-left text-gray-500">Python Intermediate</h3>

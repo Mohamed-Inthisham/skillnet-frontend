@@ -8,8 +8,9 @@ const Header = () => {
   return (
     <div className="flex items-center justify-between bg-white shadow-md p-4">
       {/* Logo */}
-      <img src={logo} alt="SkillNet Logo" className="h-8" />
-
+      <Link to="/Home">
+          <img src={logo} alt="SkillNet Logo" className="h-8" />
+      </Link>
       {/* Search Bar */}
       <div className="flex items-center bg-gray-100 px-4 py-2 rounded-full w-1/3">
         <FaSearch className="text-gray-400" />
