@@ -18,7 +18,6 @@ const Routers = () => {
           <Route path="/CompanyCourses" element={<CompanyCourses />} />
           <Route path="/CompanyAddCourses" element={<CompanyAddCourses />} />
           
-          
         </Routes>
       </Router>
     </div>
