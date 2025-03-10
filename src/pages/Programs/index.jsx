@@ -9,12 +9,80 @@ const ProgramsPage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("allPrograms");
 
-  const courses = Array(12).fill({
-    title: "Artificial Intelligence Industrial Control Systems Security",
-    provider: "Sysco Labs",
-    date: "January 6, 2025",
-    image: courseImage,
-  });
+  const courses = [
+    {
+      title: "Artificial Intelligence Industrial Control Systems Security",
+      provider: "Sysco Labs",
+      date: "January 6, 2025",
+      image: courseImage,
+    },
+    {
+      title: "Cybersecurity for Industrial Control Systems",
+      provider: "CyberSec Academy",
+      date: "February 15, 2025",
+      image: courseImage,
+    },
+    {
+      title: "Machine Learning for Business",
+      provider: "Tech Innovations",
+      date: "March 10, 2025",
+      image: courseImage,
+    },
+    {
+      title: "Cloud Security Fundamentals",
+      provider: "AWS Training",
+      date: "April 5, 2025",
+      image: courseImage,
+    },
+    {
+      title: "Blockchain and Cryptocurrency",
+      provider: "Crypto Institute",
+      date: "May 20, 2025",
+      image: courseImage,
+    },
+    {
+      title: "Full Stack Web Development",
+      provider: "Code Academy",
+      date: "June 12, 2025",
+      image: courseImage,
+    },
+    {
+      title: "Data Science with Python",
+      provider: "DataCamp",
+      date: "July 8, 2025",
+      image: courseImage,
+    },
+    {
+      title: "Ethical Hacking and Penetration Testing",
+      provider: "Hackers Academy",
+      date: "August 18, 2025",
+      image: courseImage,
+    },
+    {
+      title: "DevOps and Cloud Engineering",
+      provider: "Google Cloud",
+      date: "September 25, 2025",
+      image: courseImage,
+    },
+    {
+      title: "UI/UX Design for Beginners",
+      provider: "Design School",
+      date: "October 14, 2025",
+      image: courseImage,
+    },
+    {
+      title: "AI-powered Robotics",
+      provider: "Robotics Institute",
+      date: "November 30, 2025",
+      image: courseImage,
+    },
+    {
+      title: "Big Data Analytics",
+      provider: "Harvard Online",
+      date: "December 22, 2025",
+      image: courseImage,
+    },
+  ];
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col font-[Poppins]">
