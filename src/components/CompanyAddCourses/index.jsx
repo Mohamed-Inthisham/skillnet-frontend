@@ -191,14 +191,23 @@ const CompanyAddCourses = () => {
                     onChange={handleLessonChange}
                   />
                 </div>
+                <div className="mb-4">
+                  <label htmlFor="lessonName" className="block text-sm font-medium text-gray-700 mb-1">
+                    Video Link*
+                  </label>
+                  <input
+                    type="text"
+                    id="lessonName"
+                    name="name"
+                    placeholder="Paste your video link"
+                    className="w-full p-2 border rounded-md"
+                    value={currentLesson.name}
+                    onChange={handleLessonChange}
+                  />
+                </div>
                 
                 <div className="flex mb-4">
-                  <div className="w-3/4 pr-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Lesson Video*
-                    </label>
-                  </div>
-                  <div className="w-1/4">
+                  {/* <div className="w-1/4">
                     <div className="border-2 border-dashed border-blue-300 rounded-lg p-6 bg-blue-50 flex flex-col items-center justify-center text-center">
                       <div className="text-blue-500 mb-2">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -208,7 +217,7 @@ const CompanyAddCourses = () => {
                       <p className="text-blue-500 font-medium cursor-pointer">Click to upload</p>
                       <p className="text-sm text-gray-500">or drag & drop</p>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
                 
                 <div className="text-center">

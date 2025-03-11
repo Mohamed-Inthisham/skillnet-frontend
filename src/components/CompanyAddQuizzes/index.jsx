@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 
-
 const CompanyAddQuizzes = () => {
   const [questions, setQuestions] = useState([
     {
@@ -35,6 +34,9 @@ const CompanyAddQuizzes = () => {
     options: ["", "", "", ""],
     answer: ""
   });
+  
+  // Add a new state to track if we're editing an existing question
+  const [editingQuestionId, setEditingQuestionId] = useState(null);
 
   const handleQuestionTypeChange = (e) => {
     setCurrentQuestion({
@@ -67,12 +69,25 @@ const CompanyAddQuizzes = () => {
   };
 
   const handleSave = () => {
-    const newQuestion = {
-      id: questions.length + 1,
-      expanded: false,
-      ...currentQuestion
-    };
-    setQuestions([...questions, newQuestion]);
+    if (editingQuestionId) {
+      // Update existing question
+      setQuestions(
+        questions.map(q => 
+          q.id === editingQuestionId ? { ...q, ...currentQuestion } : q
+        )
+      );
+      setEditingQuestionId(null);
+    } else {
+      // Create new question
+      const newQuestion = {
+        id: questions.length + 1,
+        expanded: false,
+        ...currentQuestion
+      };
+      setQuestions([...questions, newQuestion]);
+    }
+    
+    // Reset form
     setCurrentQuestion({
       questionType: "",
       questionText: "",
@@ -94,8 +109,35 @@ const CompanyAddQuizzes = () => {
   };
 
   const handleEditQuestion = (id) => {
-    // Implementation for editing questions
-    console.log("Edit question", id);
+    // Find the question to edit
+    const questionToEdit = questions.find(q => q.id === id);
+    if (questionToEdit) {
+      // Load question data into form
+      setCurrentQuestion({
+        questionType: questionToEdit.questionType,
+        questionText: questionToEdit.questionText,
+        options: [...questionToEdit.options],
+        answer: questionToEdit.answer
+      });
+      setEditingQuestionId(id);
+      
+      // Scroll to the form
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  };
+  
+  // Function to cancel editing
+  const handleCancelEdit = () => {
+    setCurrentQuestion({
+      questionType: "",
+      questionText: "",
+      options: ["", "", "", ""],
+      answer: ""
+    });
+    setEditingQuestionId(null);
   };
 
   return (
@@ -105,7 +147,9 @@ const CompanyAddQuizzes = () => {
         
         {/* Questions Form Section */}
         <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <h2 className="text-lg font-bold mb-4">Questions</h2>
+          <h2 className="text-lg font-bold mb-4">
+            {editingQuestionId ? `Edit Question ${editingQuestionId}` : "Add New Question"}
+          </h2>
           
           <div className="mb-4">
             <div className="flex flex-wrap -mx-2">
@@ -192,12 +236,20 @@ const CompanyAddQuizzes = () => {
               ></textarea>
             </div>
             
-            <div className="text-center">
+            <div className="text-center flex justify-center gap-4">
+              {editingQuestionId && (
+                <button 
+                  className="bg-gray-300 text-gray-700 py-2 px-6 rounded-md"
+                  onClick={handleCancelEdit}
+                >
+                  Cancel
+                </button>
+              )}
               <button 
                 className="bg-blue-500 text-white py-2 px-6 rounded-md"
                 onClick={handleSave}
               >
-                Save
+                {editingQuestionId ? "Update" : "Save"}
               </button>
             </div>
           </div>
@@ -236,10 +288,17 @@ const CompanyAddQuizzes = () => {
                     </div>
                   </div>
                   
+                  <div className="mb-3">
+                    <span className="font-semibold">Correct Answer:</span> {question.answer}
+                  </div>
+                  
                   <div className="flex justify-end">
                     <button 
                       className="text-blue-500 mr-2"
-                      onClick={() => handleEditQuestion(question.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditQuestion(question.id);
+                      }}
                     >
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
@@ -247,7 +306,10 @@ const CompanyAddQuizzes = () => {
                     </button>
                     <button 
                       className="text-red-500"
-                      onClick={() => handleDeleteQuestion(question.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteQuestion(question.id);
+                      }}
                     >
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
