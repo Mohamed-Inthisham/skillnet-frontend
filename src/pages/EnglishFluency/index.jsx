@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; 
 import UserHeader from "../../layout/UserHeader";
 import Footer from "../../layout/Footer";
 
 const EnglishFluency = () => {
   const [counter, setCounter] = useState(5);
+  const navigate = useNavigate(); 
 
   useEffect(() => {
-    if (counter > 0) {
+    if (counter > -1) {
       const timer = setTimeout(() => setCounter(counter - 1), 1000);
-      return () => clearTimeout(timer); 
+      return () => clearTimeout(timer);
+    } else {
+      navigate("/EnglishFluencyTest"); 
     }
-  }, [counter]);
+  }, [counter, navigate]);
 
   return (
     <div className="flex flex-col min-h-screen font-[Poppins]">
@@ -31,11 +35,7 @@ const EnglishFluency = () => {
           {/* Countdown Timer */}
           <div className="mt-6">
             <span className="countdown font-mono text-6xl">
-              <span
-                style={{ "--value": counter }}
-                aria-live="polite"
-                aria-label={counter}
-              >
+              <span aria-live="polite" aria-label={counter}>
                 {counter}
               </span>
             </span>
