@@ -16,7 +16,6 @@ const CourseCard = ({ title, provider, date, image, status = "hidden", onEnroll 
     <h3 className="mt-2 text-lg text-gray-900">{title}</h3>
     <p className="text-gray-400 text-xs mt-1">Beginner - {date}</p>
     
-    {/* Keep "Enrolled" button unchanged */}
     {status !== "hidden" && (
       <div className="mt-4 flex justify-center">
         {status === "enroll" ? (
@@ -27,7 +26,6 @@ const CourseCard = ({ title, provider, date, image, status = "hidden", onEnroll 
       </div>
     )}
 
-    {/* Show "Enroll" button only for available courses */}
     {onEnroll && status === "hidden" && (
       <div className="mt-4 flex justify-center">
         <span 

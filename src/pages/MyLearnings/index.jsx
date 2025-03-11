@@ -9,7 +9,6 @@ const MyLearningsPage = () => {
   const [activeTab, setActiveTab] = useState("myLearnings");
   const [enrolledCourses, setEnrolledCourses] = useState([]);
 
-  // Fetch enrolled courses from localStorage
   useEffect(() => {
     const storedCourses = localStorage.getItem("enrolledCourses");
     try {
@@ -50,7 +49,6 @@ const MyLearningsPage = () => {
         </button>
       </div>
 
-      {/* Display enrolled courses */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-10 max-w-6xl mx-auto">
         {enrolledCourses.length > 0 ? (
           enrolledCourses.map((course, index) => (
