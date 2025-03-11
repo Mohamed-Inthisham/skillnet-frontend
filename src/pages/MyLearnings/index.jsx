@@ -20,6 +20,12 @@ const MyLearningsPage = () => {
     }
   }, []);
 
+  const handleCourseClick = (courseId) => {
+    // Navigate to the /module page with the course ID
+    //correct one --> navigate(`/module/${courseId}`);
+    navigate(`/module`);
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col font-[Poppins]">
       <UserHeader />
@@ -48,16 +54,18 @@ const MyLearningsPage = () => {
           MY LEARNINGS
         </button>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-10 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-10 max-w-6xl mx-auto cursor-pointer">
         {enrolledCourses.length > 0 ? (
           enrolledCourses.map((course, index) => (
-            <CourseCard key={index} {...course} status="enrolled" />
+            <div key={index} onClick={() => handleCourseClick(course.id)}>
+            <CourseCard {...course} status="enrolled" />
+          </div>
+            //<CourseCard key={index} {...course} status="enrolled" />
           ))
         ) : (
           <p className="text-gray-500 text-center w-full">No courses enrolled yet.</p>
         )}
-      </div>
+      </div> 
 
       <Footer bgColor="bg-black" textColor="text-white" />
     </div>

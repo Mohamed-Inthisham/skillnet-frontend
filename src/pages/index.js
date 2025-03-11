@@ -17,3 +17,4 @@ export { default as CompanyAddFluencyTests } from "./CompanyAddFluenctTests";
 export { default as CompanyAddCertifications } from "./CompanyAddCertifications";
 
 export { default as CompanyRecruitment } from "./CompanyRecruitment";
+export { default as Module } from "./Module";
