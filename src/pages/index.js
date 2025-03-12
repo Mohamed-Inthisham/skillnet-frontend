@@ -7,6 +7,7 @@ export { default as Programs } from "./Programs";
 export { default as MyLearnings } from "./MyLearnings";
 export { default as ExamRules } from "./ExamRules";
 export { default as EnglishFluency } from "./EnglishFluency";
+export { default as EnglishFluencyTest } from "./EnglishFluencyTest";
 
 export { default as CompanyDashboard } from "./CompanyDashboard";
 export { default as CompanyStudents } from "./CompanyStudents";
@@ -17,3 +18,4 @@ export { default as CompanyAddFluencyTests } from "./CompanyAddFluenctTests";
 export { default as CompanyAddCertifications } from "./CompanyAddCertifications";
 
 export { default as CompanyRecruitment } from "./CompanyRecruitment";
+export { default as ModuleContent } from "./ModuleContent";

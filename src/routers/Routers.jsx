@@ -1,5 +1,5 @@
 import { Routes, Route, BrowserRouter as Router } from "react-router-dom";
-import { ContactUs, Landing,Login,StudentRegister, CompanyDashboard, CompanyStudents, CompanyCourses, Home, Programs, MyLearnings, CompanyAddCourses, CompanyRecruitment, CompanyAddQuizzes, CompanyAddFluencyTests, CompanyAddCertifications, ExamRules, EnglishFluency} from "../pages";
+import { ContactUs, Landing,Login,StudentRegister, CompanyDashboard, CompanyStudents, CompanyCourses, Home, Programs, MyLearnings, CompanyAddCourses, CompanyRecruitment, CompanyAddQuizzes, CompanyAddFluencyTests, CompanyAddCertifications, ExamRules, EnglishFluency, EnglishFluencyTest, ModuleContent} from "../pages";
 
 const Routers = () => {
   return (
@@ -16,6 +16,7 @@ const Routers = () => {
           <Route path="/MyLearnings" element={<MyLearnings/>}/>
           <Route path="/ExamRules" element={<ExamRules/>}/>
           <Route path="/EnglishFluency" element={<EnglishFluency/>}/>
+          <Route path="/EnglishFluencyTest" element={<EnglishFluencyTest/>}/>
           <Route path="/CompanyDashboard" element={<CompanyDashboard />} />
           <Route path="/CompanyStudents" element={<CompanyStudents />} />
           <Route path="/CompanyCourses" element={<CompanyCourses />} />
@@ -23,6 +24,7 @@ const Routers = () => {
           <Route path="/CompanyAddQuizzes" element={<CompanyAddQuizzes />} />
           <Route path="/CompanyAddFluencyTests" element={<CompanyAddFluencyTests />} />
           <Route path="/CompanyAddCertifications" element={<CompanyAddCertifications />} />
+          <Route path="/ModuleContent" element={<ModuleContent />} />
 
           
         </Routes>
