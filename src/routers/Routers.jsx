@@ -26,6 +26,7 @@ const Routers = () => {
           <Route path="/CompanyAddCertifications" element={<CompanyAddCertifications />} />
           <Route path="/ModuleContent" element={<ModuleContent />} />
           <Route path="/Module" element={<Module />} />
+          <Route path="/CompanyRecruitment" element={<CompanyRecruitment />} />
           
         </Routes>
       </Router>
