@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import UserHeader from "../../layout/UserHeader";
 import Footer from "../../layout/Footer";
 import Button from "../../components/Button";
@@ -7,8 +7,10 @@ const EnglishFluencyTest = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState(null);
   const [audioBlob, setAudioBlob] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(60); 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const timerRef = useRef(null);
 
   // Start Recording
   const startRecording = async () => {
@@ -48,12 +50,24 @@ const EnglishFluencyTest = () => {
         console.log("Audio URL:", audioUrl);
 
         setAudioBlob(audioBlob);
-        setAudioURL(audioUrl); 
+        setAudioURL(audioUrl);
       };
 
       mediaRecorder.start();
       setIsRecording(true);
       console.log("Recording started...");
+
+      // Start countdown
+      setTimeLeft(60);
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            stopRecording();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     } catch (error) {
       console.error("Error accessing microphone:", error);
       alert("Microphone access is required for recording.");
@@ -75,6 +89,9 @@ const EnglishFluencyTest = () => {
       tracks.forEach((track) => track.stop());
       console.log("Microphone turned off.");
     }
+
+    // Clear countdown timer
+    clearInterval(timerRef.current);
   };
 
   return (
@@ -88,7 +105,29 @@ const EnglishFluencyTest = () => {
           </p>
         </div>
 
-        <div className="flex mt-4 space-x-4">
+
+        <div className="mt-4 flex items-center space-x-4">
+          {/* Countdown Timer */}
+          <span className="countdown font-mono text-lg bg-blue-100 text-blue-500 rounded-lg py-2 px-2">
+            <span
+              style={{ "--value": Math.floor(timeLeft / 60) }}
+              aria-live="polite"
+              aria-label={`${Math.floor(timeLeft / 60)}`}
+            >
+              {Math.floor(timeLeft / 60)}
+            </span>
+            m
+            <span
+              style={{ "--value": timeLeft % 60 }}
+              aria-live="polite"
+              aria-label={`${timeLeft % 60}`}
+            >
+              {timeLeft % 60}
+            </span>
+            s
+          </span>
+
+          {/* Recording Buttons */}
           {!isRecording ? (
             <button
               className="flex items-center bg-blue-100 text-blue-500 px-4 py-2 rounded-lg hover:bg-blue-200"
@@ -106,6 +145,11 @@ const EnglishFluencyTest = () => {
               <span>Stop Recording</span>
             </button>
           )}
+
+          <Button
+            text="Submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+          />
         </div>
 
         {audioURL && (
@@ -119,11 +163,6 @@ const EnglishFluencyTest = () => {
             </audio>
           </div>
         )}
-
-        <Button
-          text="Submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 mt-4"
-        />
       </div>
       <Footer bgColor="bg-black" textColor="text-white" />
     </div>
