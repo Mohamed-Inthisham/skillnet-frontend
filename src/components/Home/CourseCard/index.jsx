@@ -21,7 +21,7 @@ const CourseCard = ({ title, provider, date, image, status = "hidden", onEnroll 
         {status === "enroll" ? (
           <span className="text-blue-500 font-medium text-sm">Enroll</span>
         ) : (
-          <span className="text-blue-500 font-medium text-sm">Enrolled</span>
+          <span className="text-blue-500 font-medium text-sm">View Course</span>
         )}
       </div>
     )}
