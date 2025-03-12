@@ -1,256 +1,163 @@
 import React, { useState } from "react";
-import CompanyHeader from "../../layout/CompanyHeader";
+import { Link } from "react-router-dom";
+import Button from "../Button";
+import InputField from "../InputField";
 
-const CompanyAddCourses = () => {
-  const [courseData, setCourseData] = useState({
-    courseName: "",
-    courseIntroduction: "",
-    courseLevel: "",
-    lessons: []
-  });
+const AddCourses = () => {
+  const [courseName, setCourseName] = useState("");
+  const [courseIntro, setCourseIntro] = useState("");
+  const [courseLevel, setCourseLevel] = useState("");
+  const [courseImage, setCourseImage] = useState(null);
+  const [lessons, setLessons] = useState([{ name: "", videoLink: "" }]);
 
-  const [currentLesson, setCurrentLesson] = useState({
-    name: "",
-    videoUrl: ""
-  });
-
-  const [expandedLesson, setExpandedLesson] = useState("Java Syntax");
-
-  const handleCourseChange = (e) => {
-    const { name, value } = e.target;
-    setCourseData({
-      ...courseData,
-      [name]: value
-    });
+  const handleImageUpload = (event) => {
+    setCourseImage(event.target.files[0]);
   };
 
-  const handleLessonChange = (e) => {
-    const { name, value } = e.target;
-    setCurrentLesson({
-      ...currentLesson,
-      [name]: value
-    });
+  const addLesson = () => {
+    setLessons([...lessons, { name: "", videoLink: "" }]);
   };
 
-  const handleAddLesson = () => {
-    setCourseData({
-      ...courseData,
-      lessons: [...courseData.lessons, { ...currentLesson }]
-    });
-    setCurrentLesson({ name: "", videoUrl: "" });
+  const deleteLesson = (index) => {
+    const updatedLessons = lessons.filter((_, i) => i !== index);
+    setLessons(updatedLessons);
   };
 
-  const handleSaveLesson = () => {
-    // Logic to save the current lesson
-    console.log("Saving lesson:", currentLesson);
-  };
-
-  const handlePublish = () => {
-    // Logic to publish the course
-    console.log("Publishing course:", courseData);
-  };
-
-  const handleDiscard = () => {
-    // Logic to discard changes
-    console.log("Discarding changes");
+  const updateLesson = (index, key, value) => {
+    const updatedLessons = [...lessons];
+    updatedLessons[index][key] = value;
+    setLessons(updatedLessons);
   };
 
   return (
-    <>
-      <div className="p-4">
-        <h1 className="text-2xl font-bold mb-6">Add Courses</h1>
+    <div className="p-6  mx-auto  min-h-screen font-[Poppins]">
+      <h2 className="text-2xl font-semibold mb-6">Add Courses</h2>
 
-        {/* Description Section */}
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <h2 className="text-xl font-semibold mb-4">Description</h2>
-          
-          <div className="mb-4">
-            <label htmlFor="courseName" className="block text-sm font-medium text-gray-700 mb-1">
-              Course Name*
-            </label>
-            <input
-              type="text"
-              id="courseName"
-              name="courseName"
-              placeholder="type your course name"
-              className="w-full p-2 border rounded-md"
-              value={courseData.courseName}
-              onChange={handleCourseChange}
-            />
-          </div>
-          
-          <div className="mb-4">
-            <label htmlFor="courseIntroduction" className="block text-sm font-medium text-gray-700 mb-1">
-              Course Introduction*
-            </label>
-            <div className="border rounded-md mb-1">
-              <div className="flex items-center border-b p-2">
-                <button className="mr-2 font-bold">B</button>
-                <button className="mr-2 italic">I</button>
-                <button className="mr-2 underline">U</button>
-                <button className="mr-2">🔗</button>
-                <button className="mr-2">😊</button>
-              </div>
-              <textarea
-                id="courseIntroduction"
-                name="courseIntroduction"
-                placeholder="tell us about your course"
-                className="w-full p-2 border-none focus:outline-none h-24"
-                value={courseData.courseIntroduction}
-                onChange={handleCourseChange}
-              ></textarea>
-            </div>
-          </div>
-          
-          <div className="mb-4">
-            <label htmlFor="courseLevel" className="block text-sm font-medium text-gray-700 mb-1">
-              Course Level*
-            </label>
-            <div className="relative">
-              <select
-                id="courseLevel"
-                name="courseLevel"
-                className="w-full p-2 border rounded-md appearance-none"
-                value={courseData.courseLevel}
-                onChange={handleCourseChange}
-              >
-                <option value="" disabled selected>choose your course level</option>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <div className="w-3/4">
-              <label className="block text-lg font-medium mb-2">Course Image</label>
-            </div>
-            <div className="w-1/4">
-              <div className="border-2 border-dashed border-blue-300 rounded-lg p-6 bg-blue-50 flex flex-col items-center justify-center text-center">
-                <div className="text-blue-500 mb-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <p className="text-blue-500 font-medium cursor-pointer">Click to upload</p>
-                <p className="text-sm text-gray-500">or drag & drop</p>
-              </div>
-            </div>
-          </div>
+      {/* Description Card */}
+      <div className="bg-white p-6 shadow-md rounded-lg mb-6">
+        <h3 className="text-xl font-medium mb-4">Description</h3>
+        <div className="mb-4">
+          <label className="block text-gray-700 ">
+            Course Name*
+          </label>
+          <InputField
+            type="text"
+            placeholder="Type your course name"
+            value={courseName}
+            onChange={(e) => setCourseName(e.target.value)}
+          />
         </div>
-
-        {/* Lesson & Video Section */}
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Lesson & Video</h2>
-            <button
-              onClick={handleAddLesson}
-              className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-4 rounded"
-            >
-              Add Lesson
-            </button>
-          </div>
-
-          {/* Lesson Accordion */}
-          <div className="border rounded-md mb-4">
-            <div 
-              className="flex justify-between items-center p-3 cursor-pointer border-b"
-              onClick={() => setExpandedLesson(expandedLesson === "Java Syntax" ? "" : "Java Syntax")}
-            >
-              <span>Java Syntax</span>
-              <svg 
-                className={`w-5 h-5 transition-transform ${expandedLesson === "Java Syntax" ? "transform rotate-180" : ""}`} 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24" 
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
-            </div>
-            
-            {expandedLesson === "Java Syntax" && (
-              <div className="p-4">
-                <div className="mb-4">
-                  <label htmlFor="lessonName" className="block text-sm font-medium text-gray-700 mb-1">
-                    Lesson Name*
-                  </label>
-                  <input
-                    type="text"
-                    id="lessonName"
-                    name="name"
-                    placeholder="type your lesson name"
-                    className="w-full p-2 border rounded-md"
-                    value={currentLesson.name}
-                    onChange={handleLessonChange}
-                  />
-                </div>
-                <div className="mb-4">
-                  <label htmlFor="lessonName" className="block text-sm font-medium text-gray-700 mb-1">
-                    Video Link*
-                  </label>
-                  <input
-                    type="text"
-                    id="lessonName"
-                    name="name"
-                    placeholder="Paste your video link"
-                    className="w-full p-2 border rounded-md"
-                    value={currentLesson.name}
-                    onChange={handleLessonChange}
-                  />
-                </div>
-                
-                <div className="flex mb-4">
-                  {/* <div className="w-1/4">
-                    <div className="border-2 border-dashed border-blue-300 rounded-lg p-6 bg-blue-50 flex flex-col items-center justify-center text-center">
-                      <div className="text-blue-500 mb-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <p className="text-blue-500 font-medium cursor-pointer">Click to upload</p>
-                      <p className="text-sm text-gray-500">or drag & drop</p>
-                    </div>
-                  </div> */}
-                </div>
-                
-                <div className="text-center">
-                  <button
-                    onClick={handleSaveLesson}
-                    className="bg-blue-100 hover:bg-blue-200 text-blue-600 font-medium py-2 px-6 rounded-md"
-                  >
-                    Save
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">
+            Course Introduction*
+          </label>
+          <textarea
+            className="w-full border border-gray-300 rounded-lg p-3 shadow-sm"
+            placeholder="Tell us about your course"
+            value={courseIntro}
+            onChange={(e) => setCourseIntro(e.target.value)}
+          />
         </div>
-
-        {/* Action Buttons */}
-        <div className="flex justify-between">
-          <button
-            onClick={handleDiscard}
-            className="bg-white border border-red-500 text-red-500 hover:bg-red-50 font-medium py-2 px-6 rounded-md"
+        <div className="mb-4">
+          <label className="block text-gray-700">
+            Course Level*
+          </label>
+          <select
+            className="w-full border border-gray-300 rounded-lg p-2 shadow-sm"
+            value={courseLevel}
+            onChange={(e) => setCourseLevel(e.target.value)}
           >
-            Discard
-          </button>
-          <button
-            onClick={handlePublish}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-md"
-          >
-            Public
-          </button>
+            <option value="">Choose your course level</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">
+            Course Image
+          </label>
+          <input
+            type="file"
+            className="w-full border border-gray-300 rounded-lg p-2 shadow-sm"
+            onChange={handleImageUpload}
+          />
+        </div>
+        <div className="flex justify-end mt-4">
+          <Button text="Submit" className="bg-green-600 hover:bg-green-700" />
         </div>
       </div>
-    </>
+
+      {/* Lesson & Video Card */}
+      <div className="bg-white p-6 shadow-md rounded-lg mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-medium">Lesson & Video</h3>
+          <Button
+            text="Add Lesson"
+            variant="primary"
+            className="px-4 py-2 cursor-pointer"
+            onClick={addLesson}
+          />
+        </div>
+        {lessons.map((lesson, index) => (
+          <div key={index} className="border p-4 rounded-lg shadow-sm mb-4">
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="text-lg ">Java Syntax</h4>
+              {index > 0 && (
+                <Button
+                  text="Delete"
+                  variant="outline"
+                  className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white cursor-pointer"
+                  onClick={() => deleteLesson(index)}
+                />
+              )}
+            </div>
+            <div className="mb-2">
+              <label className="block text-gray-700 ">
+                Lesson Name*
+              </label>
+              <InputField
+                type="text"
+                placeholder="Type your lesson name"
+                value={lesson.name}
+                onChange={(e) => updateLesson(index, "name", e.target.value)}
+              />
+            </div>
+            <div className="mb-2">
+              <label className="block text-gray-700 ">
+                Video Link*
+              </label>
+              <InputField
+                type="text"
+                placeholder="Paste your video link"
+                value={lesson.videoLink}
+                onChange={(e) =>
+                  updateLesson(index, "videoLink", e.target.value)
+                }
+              />
+            </div>
+          </div>
+        ))}
+        <div className="flex justify-end mt-4">
+          <Button text="Save" className="bg-green-600 hover:bg-green-700" />
+        </div>
+      </div>
+
+      <div className="flex justify-between">
+        <Button
+          text="Discard"
+          variant="outline"
+          className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white"
+        />
+        <Link to="/Home">
+          <Button
+            text="Back to Home"
+            className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
+          />
+        </Link>
+      </div>
+    </div>
   );
 };
 
-export default CompanyAddCourses;
+export default AddCourses;
