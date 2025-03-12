@@ -19,3 +19,5 @@ export { default as CompanyAddCertifications } from "./CompanyAddCertifications"
 
 export { default as CompanyRecruitment } from "./CompanyRecruitment";
 export { default as ModuleContent } from "./ModuleContent";
+
+export { default as Module } from "./Module";
