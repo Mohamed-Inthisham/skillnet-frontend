@@ -6,7 +6,7 @@ import { FaLock, FaCaretDown, FaSpinner } from "react-icons/fa";
 import javaModule from "../../assets/JavaModule.webp";
 import sysco from "../../assets/sysco.webp";
 
-const ModulePage = () => {
+const ModulePage = ({ lesson, index }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State to manage dropdown
   const [isUploading, setIsUploading] = useState(false); // State to manage file upload loading
   const [isProcessing, setIsProcessing] = useState(false); // State to manage model processing
@@ -39,6 +39,14 @@ const ModulePage = () => {
         }, 5000); // Simulate 5 seconds of model processing
       }, 3000); // Simulate 3 seconds of file upload
     }
+  };
+
+  const navigate = useNavigate(); 
+  const handleClick = (event) => {
+    event.preventDefault(); // Prevent default link behavior
+    console.log("Lesson clicked:", lesson);
+    // Add custom logic, such as navigation or modal display
+    navigate('/ModuleContent');
   };
 
   return (
@@ -97,6 +105,10 @@ const ModulePage = () => {
               "Java If ... Else",
               "June Switch"
             ].map((lesson, index) => (
+            <div
+              onClick={handleClick} // Add onClick handler to the div
+              className="block mb-4 cursor-pointer" // Add cursor-pointer to indicate it's clickable
+            >
               <div key={index} className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm w-auto h-22">
                 <div className="flex items-center">
                   <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
@@ -114,6 +126,7 @@ const ModulePage = () => {
                   {index === 0 ? "Done" : "Incomplete"}
                 </span>
               </div>
+            </div> 
             ))}
           </div>
 
