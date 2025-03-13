@@ -1,337 +1,253 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
+import InputField from "../InputField";
+import Button from "../Button";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 const CompanyAddQuizzes = () => {
-  const [questions, setQuestions] = useState([
-    {
-      id: 1,
-      expanded: false,
-      questionText: "",
-      questionType: "",
-      options: ["", "", "", ""],
-      answer: ""
-    },
-    {
-      id: 2,
-      expanded: false,
-      questionText: "",
-      questionType: "",
-      options: ["", "", "", ""],
-      answer: ""
-    },
-    {
-      id: 3,
-      expanded: true,
-      questionText: "Which of the following is the correct syntax for declaring a variable in Java?",
-      questionType: "Multiple Choice",
-      options: ["int number = 10;", "int number = 10;", "int number = 10;", "int number = 10;"],
-      answer: "int number = 10;"
-    }
-  ]);
-
-  const [currentQuestion, setCurrentQuestion] = useState({
-    questionType: "",
-    questionText: "",
-    options: ["", "", "", ""],
-    answer: ""
+  const [formData, setFormData] = useState({
+    courseName: '',
+    courseContent: '',
+    question_text: '',
+    options: ['', '', '', ''],
+    correct_answer: ''
   });
-  
-  // Add a new state to track if we're editing an existing question
-  const [editingQuestionId, setEditingQuestionId] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [courseContents, setCourseContents] = useState([]);
+  const [loginError, setLoginError] = useState("");
+  const navigate = useNavigate();
 
-  const handleQuestionTypeChange = (e) => {
-    setCurrentQuestion({
-      ...currentQuestion,
-      questionType: e.target.value
-    });
-  };
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+          console.error("No JWT token found. User not logged in.");
+          return;
+        }
+        const decodedToken = jwtDecode(token);
+        const companyName = decodedToken.company_name;
+        const response = await axios.get(`http://localhost:5001/companies/${companyName}/courses`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setCourses(response.data);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    };
 
-  const handleQuestionTextChange = (e) => {
-    setCurrentQuestion({
-      ...currentQuestion,
-      questionText: e.target.value
-    });
+    fetchCourses();
+  }, []);
+
+  useEffect(() => {
+    const fetchCourseContents = async () => {
+      if (!formData.courseName) {
+        setCourseContents([]);
+        return;
+      }
+      try {
+        const selectedCourse = courses.find(course => course.course_name === formData.courseName);
+        if (!selectedCourse) {
+          setCourseContents([]);
+          return;
+        }
+        const token = localStorage.getItem("accessToken");
+        const response = await axios.get(`http://localhost:5001/courses/${selectedCourse._id}/contents`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setCourseContents(response.data);
+      } catch (error) {
+        console.error("Error fetching course contents:", error);
+        setCourseContents([]);
+      }
+    };
+
+    fetchCourseContents();
+  }, [formData.courseName, courses]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
   };
 
   const handleOptionChange = (index, value) => {
-    const newOptions = [...currentQuestion.options];
-    newOptions[index] = value;
-    setCurrentQuestion({
-      ...currentQuestion,
-      options: newOptions
-    });
+    const updatedOptions = [...formData.options];
+    updatedOptions[index] = value;
+    setFormData(prevState => ({
+      ...prevState,
+      options: updatedOptions
+    }));
   };
 
-  const handleAnswerChange = (e) => {
-    setCurrentQuestion({
-      ...currentQuestion,
-      answer: e.target.value
-    });
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoginError("");
 
-  const handleSave = () => {
-    if (editingQuestionId) {
-      // Update existing question
-      setQuestions(
-        questions.map(q => 
-          q.id === editingQuestionId ? { ...q, ...currentQuestion } : q
-        )
+    const selectedContent = courseContents.find(content => content.lesson_name === formData.courseContent);
+    if (!selectedContent) {
+      alert("Please select a valid Course Content.");
+      return;
+    }
+
+    // **Corrected MCQ Data Object Construction - Ensure correct_answer is A, B, C, or D:**
+    const mcqData = {
+      question_text: formData.question_text,
+      options: formData.options,
+      correct_answer: formData.correct_answer // **Expect formData.correct_answer to be "A", "B", "C", or "D"**
+    };
+
+    console.log("Sending MCQ data:", mcqData);
+    console.log("Current formData before submit:", formData); // **Debug log - check formData before submit**
+
+
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        console.error("No JWT token found. User not logged in.");
+        return;
+      }
+
+      const response = await axios.post(
+        `http://localhost:5001/contents/${selectedContent._id}/mcqs`,
+        mcqData,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      setEditingQuestionId(null);
-    } else {
-      // Create new question
-      const newQuestion = {
-        id: questions.length + 1,
-        expanded: false,
-        ...currentQuestion
-      };
-      setQuestions([...questions, newQuestion]);
-    }
-    
-    // Reset form
-    setCurrentQuestion({
-      questionType: "",
-      questionText: "",
-      options: ["", "", "", ""],
-      answer: ""
-    });
-  };
 
-  const toggleQuestion = (id) => {
-    setQuestions(
-      questions.map(q => 
-        q.id === id ? { ...q, expanded: !q.expanded } : { ...q, expanded: false }
-      )
-    );
-  };
-
-  const handleDeleteQuestion = (id) => {
-    setQuestions(questions.filter(q => q.id !== id));
-  };
-
-  const handleEditQuestion = (id) => {
-    // Find the question to edit
-    const questionToEdit = questions.find(q => q.id === id);
-    if (questionToEdit) {
-      // Load question data into form
-      setCurrentQuestion({
-        questionType: questionToEdit.questionType,
-        questionText: questionToEdit.questionText,
-        options: [...questionToEdit.options],
-        answer: questionToEdit.answer
-      });
-      setEditingQuestionId(id);
-      
-      // Scroll to the form
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
+      console.log("MCQ created successfully:", response.data);
+      alert("Quiz question added successfully!");
+      handleDiscard(); // Clear the form
+    } catch (error) {
+      console.error("Error creating MCQ:", error);
+      setLoginError("Failed to add quiz question.");
+      if (error.response && error.response.data && error.response.data.msg) {
+        setLoginError(error.response.data.msg);
+      }
     }
   };
-  
-  // Function to cancel editing
-  const handleCancelEdit = () => {
-    setCurrentQuestion({
-      questionType: "",
-      questionText: "",
-      options: ["", "", "", ""],
-      answer: ""
+
+
+  const handleDiscard = () => {
+    setFormData({
+      courseName: '',
+      courseContent: '',
+      question_text: '',
+      options: ['', '', '', ''],
+      correct_answer: ''
     });
-    setEditingQuestionId(null);
   };
 
   return (
-    <>
-      <div className="p-4">
-        <h1 className="text-2xl font-bold mb-6">Add Quizzes</h1>
-        
-        {/* Questions Form Section */}
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <h2 className="text-lg font-bold mb-4">
-            {editingQuestionId ? `Edit Question ${editingQuestionId}` : "Add New Question"}
-          </h2>
-          
-          <div className="mb-4">
-            <div className="flex flex-wrap -mx-2">
-              <div className="w-1/2 px-2 mb-4">
-                <label className="block text-gray-700 mb-2">
-                  Question Type<span className="text-red-500">*</span>
-                </label>
-                <select 
-                  className="w-full border rounded-md p-2"
-                  value={currentQuestion.questionType}
-                  onChange={handleQuestionTypeChange}
-                >
-                  <option value="">Choose question type</option>
-                  <option value="Multiple Choice">Multiple Choice</option>
-                  <option value="Short Answer">Short Answer</option>
-                  <option value="True/False">True/False</option>
-                </select>
-              </div>
-              
-              <div className="w-1/2 px-2 mb-4">
-                <label className="block text-gray-700 mb-2">
-                  Question<span className="text-red-500">*</span>
-                </label>
-                <input 
-                  type="text" 
-                  className="w-full border rounded-md p-2" 
-                  placeholder="Write your question"
-                  value={currentQuestion.questionText}
-                  onChange={handleQuestionTextChange}
-                />
-              </div>
+    <div className="p-6 max-w-4xl mx-auto font-[Poppins]">
+      <h2 className="text-2xl font-semibold mb-6">Add Quizzes</h2>
+
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h3 className="text-xl mb-4">Questions</h3>
+
+        <form onSubmit={handleSubmit}>
+          {loginError && <p className="text-red-500 text-sm mb-2">{loginError}</p>}
+          <div className="grid grid-cols-2 gap-6 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Course Name*
+              </label>
+              <select
+                name="courseName"
+                value={formData.courseName}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select One</option>
+                {courses.map(course => (
+                  <option key={course._id} value={course.course_name}>{course.course_name}</option>
+                ))}
+              </select>
             </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">
-                Options / Answer<span className="text-red-500">*</span>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Course Content*
               </label>
-              
-              <div className="flex flex-wrap -mx-2 mb-4">
-                <div className="w-1/2 px-2 mb-2">
-                  <input 
-                    type="text" 
-                    className="w-full border rounded-md p-2" 
-                    placeholder="Option A"
-                    value={currentQuestion.options[0]}
-                    onChange={(e) => handleOptionChange(0, e.target.value)}
-                  />
-                </div>
-                <div className="w-1/2 px-2 mb-2">
-                  <input 
-                    type="text" 
-                    className="w-full border rounded-md p-2" 
-                    placeholder="Option B"
-                    value={currentQuestion.options[1]}
-                    onChange={(e) => handleOptionChange(1, e.target.value)}
-                  />
-                </div>
-                <div className="w-1/2 px-2 mb-2">
-                  <input 
-                    type="text" 
-                    className="w-full border rounded-md p-2" 
-                    placeholder="Option C"
-                    value={currentQuestion.options[2]}
-                    onChange={(e) => handleOptionChange(2, e.target.value)}
-                  />
-                </div>
-                <div className="w-1/2 px-2 mb-2">
-                  <input 
-                    type="text" 
-                    className="w-full border rounded-md p-2" 
-                    placeholder="Option D"
-                    value={currentQuestion.options[3]}
-                    onChange={(e) => handleOptionChange(3, e.target.value)}
-                  />
-                </div>
-              </div>
-              
-              <textarea 
-                className="w-full border rounded-md p-2" 
-                rows="4" 
-                placeholder="Write your answer"
-                value={currentQuestion.answer}
-                onChange={handleAnswerChange}
-              ></textarea>
-            </div>
-            
-            <div className="text-center flex justify-center gap-4">
-              {editingQuestionId && (
-                <button 
-                  className="bg-gray-300 text-gray-700 py-2 px-6 rounded-md"
-                  onClick={handleCancelEdit}
-                >
-                  Cancel
-                </button>
-              )}
-              <button 
-                className="bg-blue-500 text-white py-2 px-6 rounded-md"
-                onClick={handleSave}
+              <select
+                name="courseContent"
+                value={formData.courseContent}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                {editingQuestionId ? "Update" : "Save"}
-              </button>
+                <option value="">Select One</option>
+                {courseContents.map(content => (
+                  <option key={content._id} value={content.lesson_name}>{content.lesson_name}</option>
+                ))}
+              </select>
             </div>
           </div>
-        </div>
-        
-        {/* Question List Section */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-bold mb-4">Question List</h2>
-          
-          {questions.map((question) => (
-            <div key={question.id} className="border rounded-md mb-4">
-              <div 
-                className="flex justify-between items-center p-3 cursor-pointer"
-                onClick={() => toggleQuestion(question.id)}
-              >
-                <span>Question {question.id}</span>
-                <span>{question.expanded ? "▲" : "▼"}</span>
-              </div>
-              
-              {question.expanded && (
-                <div className="p-4 border-t">
-                  <p className="mb-4">{question.questionText}</p>
-                  
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <span className="font-semibold">A.</span> {question.options[0]}
-                    </div>
-                    <div>
-                      <span className="font-semibold">B.</span> {question.options[1]}
-                    </div>
-                    <div>
-                      <span className="font-semibold">C.</span> {question.options[2]}
-                    </div>
-                    <div>
-                      <span className="font-semibold">D.</span> {question.options[3]}
-                    </div>
-                  </div>
-                  
-                  <div className="mb-3">
-                    <span className="font-semibold">Correct Answer:</span> {question.answer}
-                  </div>
-                  
-                  <div className="flex justify-end">
-                    <button 
-                      className="text-blue-500 mr-2"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditQuestion(question.id);
-                      }}
-                    >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-                      </svg>
-                    </button>
-                    <button 
-                      className="text-red-500"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteQuestion(question.id);
-                      }}
-                    >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-          
-          <div className="flex justify-between mt-6">
-            <button className="bg-white border border-red-500 text-red-500 py-2 px-6 rounded-md">
-              Discard
-            </button>
-            <button className="bg-blue-500 text-white py-2 px-6 rounded-md">
-              Public
-            </button>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Question*
+            </label>
+            <textarea
+              name="question_text"
+              value={formData.question_text}
+              onChange={handleChange}
+              placeholder="Write your question"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows="3"
+            />
           </div>
-        </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Options / Answer*
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              {formData.options.map((option, index) => (
+                <input
+                  key={index}
+                  type="text"
+                  name={`option${String.fromCharCode(65 + index)}`}
+                  value={option}
+                  onChange={(e) => handleOptionChange(index, e.target.value)}
+                  placeholder={`Option ${String.fromCharCode(65 + index)}`}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Correct Answer* (A, B, C, or D)
+            </label>
+            <input
+              type="text"
+              name="correct_answer"
+              value={formData.correct_answer}
+              onChange={handleChange}
+              placeholder="Write correct answer (A, B, C, or D)"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+            <div className="flex justify-end space-x-4">
+            <Button
+              text="Discard"
+              variant="outline"
+              className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white"
+              onClick={handleDiscard}
+            />
+            <Button
+              text="Save"
+              className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
+              onClick={handleSubmit}
+            />
+          </div>
+        </form>
       </div>
-    </>
+    </div>
   );
 };
 
