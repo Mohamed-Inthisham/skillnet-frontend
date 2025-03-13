@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import CertificationPreview from "../CertificationPreview";
 
 const CompanyAddCertifications = () => {
   const [certificateData, setCertificateData] = useState({
@@ -14,6 +14,9 @@ const CompanyAddCertifications = () => {
     issuingOrganization: "Virtusa",
     certificateDescription: "For successfully completed the SKILLNET online course and examination on the topic of"
   });
+  
+  // Add state for preview modal
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -40,6 +43,8 @@ const CompanyAddCertifications = () => {
   const handlePreview = () => {
     // Set preview data to current form data
     setPreviewData(certificateData);
+    // Open the preview modal
+    setIsPreviewOpen(true);
   };
 
   const handlePublish = () => {
@@ -180,6 +185,13 @@ const CompanyAddCertifications = () => {
           </div>
         </div>
       </div>
+
+      {/* Certification Preview Modal */}
+      <CertificationPreview 
+        isOpen={isPreviewOpen} 
+        onClose={() => setIsPreviewOpen(false)} 
+        certificateData={previewData} 
+      />
     </>
   );
 };
