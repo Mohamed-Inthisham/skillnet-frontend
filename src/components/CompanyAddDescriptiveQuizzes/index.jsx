@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
-import { Link } from "react-router-dom";
 import Button from "../Button";
 
-const CompanyAddQuizzes = () => {
+const CompanyAddDescriptiveQuizzes = () => {
   const [formData, setFormData] = useState({
     courseName: '',
     courseContent: '',
     question: '',
-    optionA: '',
-    optionB: '',
-    optionC: '',
-    optionD: '',
     correctAnswer: ''
   });
 
@@ -33,17 +28,13 @@ const CompanyAddQuizzes = () => {
       courseName: '',
       courseContent: '',
       question: '',
-      optionA: '',
-      optionB: '',
-      optionC: '',
-      optionD: '',
       correctAnswer: ''
     });
   };
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-semibold mb-6">Add Quizzes</h2>
+      <h2 className="text-2xl font-semibold mb-6">Add Descriptive Quizzes</h2>
       
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h3 className="text-xl mb-4">Questions</h3>
@@ -99,68 +90,30 @@ const CompanyAddQuizzes = () => {
 
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Options / Answer*
-            </label>
-            <div className="grid grid-cols-2 gap-4">
-              <input
-                type="text"
-                name="optionA"
-                value={formData.optionA}
-                onChange={handleChange}
-                placeholder="option A"
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                name="optionB"
-                value={formData.optionB}
-                onChange={handleChange}
-                placeholder="option B"
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                name="optionC"
-                value={formData.optionC}
-                onChange={handleChange}
-                placeholder="option C"
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                name="optionD"
-                value={formData.optionD}
-                onChange={handleChange}
-                placeholder="option D"
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
               Correct Answer*
             </label>
-            <input
-              type="text"
+            <textarea
               name="correctAnswer"
               value={formData.correctAnswer}
               onChange={handleChange}
-              placeholder="Write correct answer"
+              placeholder="Write Correct answer"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows="3"
             />
           </div>
 
-            <div className="flex justify-end space-x-4">
+          <div className="flex justify-end space-x-4">
             <Button
-            text="Discard"
-            variant="outline"
-            className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white"
+              text="Discard"
+              variant="outline"
+              className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white"
+              onClick={handleDiscard}
             />
-           <Button
-            text="Save"
-            className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
-          />
+            <Button
+              text="Save"
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
+            />
           </div>
         </form>
       </div>
@@ -168,5 +121,4 @@ const CompanyAddQuizzes = () => {
   );
 };
 
-
-export default CompanyAddQuizzes;
+export default CompanyAddDescriptiveQuizzes;
