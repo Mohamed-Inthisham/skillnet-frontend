@@ -2,50 +2,48 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserHeader from "../../layout/UserHeader";
 import Footer from "../../layout/Footer";
+import ModuleContentEdiPage from "../../components/ModuleContentEdit";
 import { FaLock, FaCaretDown, FaSpinner } from "react-icons/fa";
 import javaModule from "../../assets/JavaModule.webp";
 import sysco from "../../assets/sysco.webp";
 
 const ModulePage = ({ lesson, index }) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State to manage dropdown
-  const [isUploading, setIsUploading] = useState(false); // State to manage file upload loading
-  const [isProcessing, setIsProcessing] = useState(false); // State to manage model processing
-  const [uploadedFileName, setUploadedFileName] = useState(""); // State to store uploaded file name
-  const [matchedJDs, setMatchedJDs] = useState([]); // State to store matched JDs
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); 
+  const [isUploading, setIsUploading] = useState(false); 
+  const [isProcessing, setIsProcessing] = useState(false); 
+  const [uploadedFileName, setUploadedFileName] = useState(""); 
+  const [matchedJDs, setMatchedJDs] = useState([]); 
 
   const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen); // Toggle dropdown state
+    setIsDropdownOpen(!isDropdownOpen); 
   };
 
   const handleFileUpload = (event) => {
-    const file = event.target.files[0]; // Get the uploaded file
+    const file = event.target.files[0]; 
     if (file) {
-      setIsUploading(true); // Start file upload loading
-      setUploadedFileName(file.name); // Store the file name
+      setIsUploading(true); 
+      setUploadedFileName(file.name); 
 
-      // Simulate file upload process (e.g., API call)
       setTimeout(() => {
-        setIsUploading(false); // Stop file upload loading after 3 seconds
-        setIsProcessing(true); // Start model processing
+        setIsUploading(false); 
+        setIsProcessing(true); 
 
-        // Simulate model processing (e.g., API call)
         setTimeout(() => {
-          setIsProcessing(false); // Stop model processing after 5 seconds
+          setIsProcessing(false); 
           setMatchedJDs([
             "Software Engineer at Sysco Labs",
             "Data Scientist at Tech Corp",
             "Machine Learning Engineer at AI Solutions",
-          ]); // Set matched JDs
-        }, 5000); // Simulate 5 seconds of model processing
-      }, 3000); // Simulate 3 seconds of file upload
+          ]); 
+        }, 5000); 
+      }, 3000); 
     }
   };
 
   const navigate = useNavigate(); 
   const handleClick = (event) => {
-    event.preventDefault(); // Prevent default link behavior
+    event.preventDefault(); 
     console.log("Lesson clicked:", lesson);
-    // Add custom logic, such as navigation or modal display
     navigate('/ModuleContent');
   };
 
@@ -106,8 +104,8 @@ const ModulePage = ({ lesson, index }) => {
               "June Switch"
             ].map((lesson, index) => (
             <div
-              onClick={handleClick} // Add onClick handler to the div
-              className="block mb-4 cursor-pointer" // Add cursor-pointer to indicate it's clickable
+              onClick={handleClick} 
+              className="block mb-4 cursor-pointer" 
             >
               <div key={index} className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm w-auto h-22">
                 <div className="flex items-center">
@@ -191,7 +189,7 @@ const ModulePage = ({ lesson, index }) => {
                   type="file"
                   className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   accept=".pdf,.doc,.docx"
-                  onChange={handleFileUpload} // Add onChange handler
+                  onChange={handleFileUpload} 
                 />
                 <p className="text-sm text-gray-500 mt-2">Supported formats: PDF, DOC, DOCX</p>
 
@@ -231,7 +229,6 @@ const ModulePage = ({ lesson, index }) => {
           </div>
         </section>
       </main>
-
       <Footer />
     </div>
   );
