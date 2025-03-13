@@ -1,28 +1,66 @@
+import React, { useState, useEffect } from "react";
 import { FaEye, FaTrash, FaPlus } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
-
-const courses = [
-  { id: 1, name: "Introduction to JAVA", lessons: 8, time: "5h" },
-  { id: 2, name: "Introduction to C++", lessons: 11, time: "7h" },
-  { id: 3, name: "React Intermediate", lessons: 6, time: "4h" },
-  { id: 4, name: "Introduction to Python", lessons: 9, time: "7h" },
-  { id: 5, name: "Introduction to C", lessons: 8, time: "5h" },
-  { id: 6, name: "Introduction to React", lessons: 6, time: "5h" },
-  { id: 7, name: "Introduction to .Net", lessons: 11, time: "5h" },
-  { id: 8, name: "React Intermediate", lessons: 8, time: "5h" },
-  { id: 9, name: "Python Intermediate", lessons: 12, time: "5h" },
-  { id: 10, name: "Introduction to Ruby", lessons: 4, time: "5h" },
-];
+import { jwtDecode } from "jwt-decode";
 
 const CompanyCourses = () => {
   const navigate = useNavigate();
+  const [courses, setCourses] = useState([]);
+  const [companyName, setCompanyName] = useState("");
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        console.log("Token retrieved for fetching courses:", token);
+
+        if (!token) {
+          console.error("No JWT token found. User not logged in.");
+          alert("Authentication required. Please log in.");
+          return;
+        }
+
+        try {
+          const decodedToken = jwtDecode(token);
+          const decodedCompanyName = decodedToken.company_name;
+          setCompanyName(decodedCompanyName);
+          console.log("Decoded Company Name from JWT:", decodedCompanyName);
+
+          const response = await fetch(`http://localhost:5001/companies/${decodedCompanyName}/courses`, {
+            headers: {
+              "Authorization": `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            const coursesData = await response.json();
+            console.log("Courses fetched successfully:", coursesData);
+            setCourses(coursesData);
+          } else {
+            const errorData = await response.json();
+            console.error("Error fetching courses:", errorData);
+            alert(`Failed to load courses: ${errorData.msg || "Unknown error"}`);
+          }
+        } catch (decodeError) {
+          console.error("Error decoding JWT:", decodeError);
+          alert("Error decoding authentication token.");
+        }
+
+      } catch (error) {
+        console.error("Fetch error:", error);
+        alert("Failed to connect to the server to fetch courses.");
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   const handleRowClick = (courseId) => {
-    navigate(`/CompanyModule`); //navigate(`/CompanyModulePage/${courseId}`); 
+    navigate(`/CompanyModule`); //navigate(`/CompanyModulePage/${courseId}`);
   };
 
   const handleButtonClick = (e, courseId, action) => {
-    e.stopPropagation(); // Stop event propagation to prevent row click
+    e.stopPropagation();
     if (action === 'view') {
       console.log('View clicked for:', courseId);
     } else if (action === 'delete') {
@@ -67,32 +105,30 @@ const CompanyCourses = () => {
             <tr className="bg-gray-200 text-gray-700 text-sm uppercase">
               <th className="p-3 text-left">Course Name</th>
               <th className="p-3 text-center">Lessons</th>
-              <th className="p-3 text-center">Total Time</th>
+              <th className="p-3 text-center">Level</th>
               <th className="p-3 text-center">Action</th>
             </tr>
           </thead>
           <tbody>
             {courses.map((course, index) => (
               <tr
-                key={course.id}
-                className={`border-b ${
-                  index % 2 === 0 ? "bg-gray-100" : "bg-white"
-                } hover:bg-gray-200 transition cursor-pointer`}
-                onClick={() => handleRowClick(course.id)} 
+                key={course._id}
+                className={`border-b ${index % 2 === 0 ? "bg-gray-100" : "bg-white"} hover:bg-gray-200 transition cursor-pointer`}
+                onClick={() => handleRowClick(course._id)}
               >
-                <td className="p-3">{course.name}</td>
-                <td className="p-3 text-center">{course.lessons}</td>
-                <td className="p-3 text-center">{course.time}</td>
+                <td className="p-3">{course.course_name}</td>
+                <td className="p-3 text-center">{course.lesson_count}</td>
+                <td className="p-3 text-center">{course.level}</td>
                 <td className="p-3 flex justify-center space-x-3">
                   <button
                     className="text-blue-500 hover:text-blue-700 transition"
-                    onClick={(e) => handleButtonClick(e, course.id, 'view')} 
+                    onClick={(e) => handleButtonClick(e, course._id, 'view')}
                   >
                     <FaEye size={18} />
                   </button>
                   <button
                     className="text-red-500 hover:text-red-700 transition"
-                    onClick={(e) => handleButtonClick(e, course.id, 'delete')} 
+                    onClick={(e) => handleButtonClick(e, course._id, 'delete')}
                   >
                     <FaTrash size={18} />
                   </button>
