@@ -10,10 +10,10 @@ const FeatureSection = () => (
     <h2 className="text-2xl font-medium mb-6">Courses and Professional Certificates</h2>
     <div className="grid grid-cols-4 gap-4 ">
       {[
-        { image: faceImage, title: "Face Recognition", description: "Lorem ipsum dolor sit amet." },
-        { image: englishIcon, title: "Answer Evaluation", description: "Lorem ipsum dolor sit amet." },
-        { image: answerIcon, title: "Apply Jobs", description: "Lorem ipsum dolor sit amet." },
-        { image: jobsIcon, title: "Language Fluency", description: "Lorem ipsum dolor sit amet." },
+        { image: faceImage, title: "Face Recognition", description: "Verify user identity with secure face authentication." },
+        { image: jobsIcon, title: "Language Fluency", description: "Get detailed feedback on your spoken English proficiency." },
+        { image: englishIcon, title: "Answer Evaluation", description: "Get instant feedback with smart answer analysis." },
+        { image: answerIcon, title: "Apply Jobs", description: "Boost your career by applying for jobs with verified skills." },
       ].map((feature, index) => (
         <FeatureCard key={index} {...feature} />
       ))}

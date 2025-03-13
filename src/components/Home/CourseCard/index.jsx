@@ -13,8 +13,8 @@ const CourseCard = ({ title, provider, date, image, status = "hidden", onEnroll 
       <span className="text-xs text-gray-600">{provider}</span>
     </div>
     
-    <h3 className="mt-2 text-lg text-gray-900">{title}</h3>
-    <p className="text-gray-400 text-xs mt-1">Beginner - {date}</p>
+    <h3 className="mt-2 text-lg text-gray-900 h-14 overflow-hidden">{title}</h3>
+    <p className="text-gray-400 text-xs mt-1 h-6">Beginner - {date}</p>
     
     {status !== "hidden" && (
       <div className="mt-4 flex justify-center">
