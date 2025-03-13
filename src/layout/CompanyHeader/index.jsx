@@ -1,27 +1,53 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import logo from "../../assets/Logo.webp";
 import userImage from "../../assets/userImage.webp";
-import { Link } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; // Import jwt-decode
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { jwtDecode } from "jwt-decode";
 
 const UserHeader = () => {
-  // Get access token from local storage
   const accessToken = localStorage.getItem("accessToken");
-  let profileImageUrl = userImage; // Default user image
+  const [profileImageUrl, setProfileImageUrl] = useState(userImage);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State for dropdown visibility
+  const dropdownRef = useRef(null); // Ref to the dropdown menu
+  const navigate = useNavigate(); // Hook for redirection
 
-  if (accessToken) {
-    try {
-      const decodedToken = jwtDecode(accessToken);
-      // Construct absolute image URL pointing to your backend (port 5001)
-      profileImageUrl = `http://localhost:5001${decodedToken.profile_image_url}` || userImage; // Use JWT image if available, otherwise default
-      // For debugging - keep this line in development, remove in production
-      console.log("Decoded JWT in UserHeader:", decodedToken);
-    } catch (error) {
-      console.error("Error decoding JWT in UserHeader:", error);
-      // If decoding fails, fall back to default image
-      profileImageUrl = userImage;
+  useEffect(() => {
+    if (accessToken) {
+      try {
+        const decodedToken = jwtDecode(accessToken);
+        setProfileImageUrl(`http://localhost:5001${decodedToken.profile_image_url}` || userImage);
+        console.log("Decoded JWT in UserHeader:", decodedToken);
+      } catch (error) {
+        console.error("Error decoding JWT in UserHeader:", error);
+        setProfileImageUrl(userImage);
+      }
     }
-  }
+  }, [accessToken]);
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken"); // Clear access token on logout
+    navigate("/login"); // Redirect to login page after logout
+    setIsDropdownOpen(false); // Close dropdown after logout
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownRef]);
+
 
   return (
     <header className="flex items-center justify-between px-8 py-2 border-b-2 border-gray-200 ml-[100px] mr-[100px] font-[Poppins]">
@@ -48,15 +74,35 @@ const UserHeader = () => {
         </a>
       </nav>
 
-      {/* User Icon - Displaying User Image */}
-      <div>
-        <button className="rounded-full hover:cursor-pointer">
+      {/* User Icon - Dropdown */}
+      <div className="relative"> {/* Relative wrapper for user icon and dropdown */}
+        <button
+          className="rounded-full hover:cursor-pointer focus:outline-none" // Added focus:outline-none
+          onClick={toggleDropdown}
+          aria-haspopup="true"
+          aria-expanded={isDropdownOpen}
+        >
           <img
-            src={profileImageUrl} // Use profileImageUrl here - absolute URL
+            src={profileImageUrl}
             alt="User Profile"
-            className="rounded-full h-8 w-8 object-cover" // Tailwind classes for styling
+            className="rounded-full h-8 w-8 object-cover"
           />
         </button>
+
+        {/* Dropdown Menu */}
+        {isDropdownOpen && (
+          <div ref={dropdownRef} className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-xl z-10 border border-gray-200">
+            <Link to="/account" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              View Account
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:outline-none" // Button for logout
+            >
+              Logout
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );
