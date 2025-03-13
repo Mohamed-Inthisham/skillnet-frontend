@@ -34,14 +34,14 @@ const CompanyAddDescriptiveQuizzes = () => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-semibold mb-6">Add Descriptive Quizzes</h2>
+      <h2 className="text-2xl font-semibold mb-6">Add Exam Quizzes</h2>
       
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h3 className="text-xl mb-4">Questions</h3>
+        <h3 className="text-xl mb-4">Add Descriptive Questions</h3>
         
         <form onSubmit={handleSubmit}>
           {/* <div className="grid grid-cols-2 gap-6 mb-6"> */}
-            {/* <div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Course Name*
               </label>
@@ -51,11 +51,11 @@ const CompanyAddDescriptiveQuizzes = () => {
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">choose question type</option>
+                <option value="">choose course</option>
                 <option value="course1">Course 1</option>
                 <option value="course2">Course 2</option>
               </select>
-            </div> */}
+            </div>
             
             {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
