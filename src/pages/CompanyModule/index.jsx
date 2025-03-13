@@ -5,86 +5,81 @@ import Footer from "../../layout/Footer";
 import { FaLock, FaCaretDown, FaSpinner, FaEdit, FaTrash, FaUpload, FaSave } from "react-icons/fa";
 import javaModule from "../../assets/JavaModule.webp";
 import sysco from "../../assets/sysco.webp";
-import ModuleContentEditPage from "../../components/ModuleContentEdit"; 
+import ModuleContentEditPage from "../../components/ModuleContentEdit";
+import CompanyEnglishFluencyTest from "../../components/CompanyEnglishFluencyTest"; // Import the Fluency Test component
 
 const CompanyModulePage = () => {
-  const [isUploading, setIsUploading] = useState(false); 
-  const [isProcessing, setIsProcessing] = useState(false); 
-  const [uploadedFileName, setUploadedFileName] = useState(""); 
-  const [matchedJDs, setMatchedJDs] = useState([]); 
-  const [courseImage, setCourseImage] = useState(javaModule); 
-  const [editingField, setEditingField] = useState(null); 
-  const [courseTitle, setCourseTitle] = useState("Introduction to JAVA"); 
+  const [isUploading, setIsUploading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [uploadedFileName, setUploadedFileName] = useState("");
+  const [matchedJDs, setMatchedJDs] = useState([]);
+  const [courseImage, setCourseImage] = useState(javaModule);
+  const [editingField, setEditingField] = useState(null);
+  const [courseTitle, setCourseTitle] = useState("Introduction to JAVA");
   const [introductionText, setIntroductionText] = useState(
     "Kevin Harris took at work, construction capability of k. Job do availored proper headquarters at Boston or Golden League sillips, for some part from wherever job is installed as remediated submicro telefonia will of aiding the KG commode onepaying; that code issue order is reprehended in real-gram well; case citizen offence on legal route position. Excepteur sint occasional duplicate inter per district, such in major call office disassum merit merits of out take-nim."
-  ); // State for introduction text
-  const [openLessonIndex, setOpenLessonIndex] = useState(null); 
-  const [isExamDropdownOpen, setIsExamDropdownOpen] = useState(false); 
-  const navigate = useNavigate(); 
+  );
+  const [openLessonIndex, setOpenLessonIndex] = useState(null);
+  const [isExamDropdownOpen, setIsExamDropdownOpen] = useState(false);
+  const [isFluencyTestOpen, setIsFluencyTestOpen] = useState(false); // State to manage Fluency Test dropdown
+  const navigate = useNavigate();
 
   const toggleDropdown = (index) => {
     if (openLessonIndex === index) {
-      setOpenLessonIndex(null); 
+      setOpenLessonIndex(null);
     } else {
-      setOpenLessonIndex(index); 
+      setOpenLessonIndex(index);
     }
   };
 
   const toggleExamDropdown = () => {
-    setIsExamDropdownOpen(!isExamDropdownOpen); 
+    setIsExamDropdownOpen(!isExamDropdownOpen);
+  };
+
+  const toggleFluencyTest = () => {
+    setIsFluencyTestOpen(!isFluencyTestOpen); // Toggle Fluency Test dropdown
   };
 
   const handleFileUpload = (event) => {
-    const file = event.target.files[0]; 
+    const file = event.target.files[0];
     if (file) {
-      setIsUploading(true); 
-      setUploadedFileName(file.name); 
+      setIsUploading(true);
+      setUploadedFileName(file.name);
 
-      
       setTimeout(() => {
-        setIsUploading(false); 
-        setIsProcessing(true); 
+        setIsUploading(false);
+        setIsProcessing(true);
 
         setTimeout(() => {
-          setIsProcessing(false); 
+          setIsProcessing(false);
           setMatchedJDs([
             "Software Engineer at Sysco Labs",
             "Data Scientist at Tech Corp",
             "Machine Learning Engineer at AI Solutions",
-          ]); 
+          ]);
         }, 5000);
-      }, 3000); 
+      }, 3000);
     }
   };
 
   const handleImageUpload = (event) => {
-    const file = event.target.files[0]; 
+    const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setCourseImage(e.target.result); 
+        setCourseImage(e.target.result);
       };
-      reader.readAsDataURL(file); 
+      reader.readAsDataURL(file);
     }
   };
 
   const handleEdit = (field) => {
-    setEditingField(field); 
+    setEditingField(field);
   };
 
   const handleSave = () => {
-    setEditingField(null); 
+    setEditingField(null);
     console.log("Changes saved!");
-  };
-
- 
-  const handleFluencyTestClick = () => {
-    navigate("/CompanyAddFluencyTests"); 
-  };
-
-  
-  const handleExamsClick = () => {
-    navigate("/exams");
   };
 
   return (
@@ -275,7 +270,7 @@ const CompanyModulePage = () => {
             <div className="mt-4 p-4 bg-gray-50 rounded-lg shadow-sm">
               <div
                 className="flex items-center justify-between p-4 mb-2 bg-white rounded-lg shadow-sm cursor-pointer hover:bg-gray-100"
-                onClick={handleFluencyTestClick} 
+                onClick={toggleFluencyTest} // Toggle Fluency Test dropdown
               >
                 <div className="flex items-center">
                   <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
@@ -285,11 +280,19 @@ const CompanyModulePage = () => {
                     <h3 className="text-sm text-gray-800">Fluency Test</h3>
                   </div>
                 </div>
+                <FaCaretDown className="text-blue-500" />
               </div>
+
+              {/* Fluency Test Component */}
+              {isFluencyTestOpen && (
+                <div className="mt-4">
+                  <CompanyEnglishFluencyTest /> {/* Load the Fluency Test component */}
+                </div>
+              )}
 
               <div
                 className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:bg-gray-100"
-                onClick={handleExamsClick} 
+                onClick={() => navigate("/exams")} // Redirect to Exams page
               >
                 <div className="flex items-center">
                   <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
@@ -299,6 +302,7 @@ const CompanyModulePage = () => {
                     <h3 className="text-sm text-gray-800">Exams</h3>
                   </div>
                 </div>
+                <FaCaretDown className="text-blue-500" />
               </div>
             </div>
           )}
@@ -325,7 +329,7 @@ const CompanyModulePage = () => {
           <h2 className="text-xl font-bold text-gray-800 mb-4">Apply For Job</h2>
           <div
             className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer"
-            onClick={() => toggleDropdown(-1)} 
+            onClick={() => toggleDropdown(-1)}
           >
             <div className="flex items-center">
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
