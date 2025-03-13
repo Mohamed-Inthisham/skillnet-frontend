@@ -3,14 +3,14 @@ import React from "react";
 const Students = () => {
   // Sample student data
   const students = [
-    { name: "Vishnu Vindo", email: "vishnuv99@gmail.com", courses: 2, enrolled: "Dec 23, 2024" },
-    { name: "J. S Kasuni", email: "skasunilearning@gmail.com", courses: 1, enrolled: "Nov 18, 2024" },
-    { name: "A.L.P Perera", email: "pawanipe­rera12@gmail.com", courses: 2, enrolled: "Nov 7, 2024" },
-    { name: "Plumi Gamage", email: "piyumigi2001@gmail.com", courses: 2, enrolled: "Dec 23, 2024" },
-    { name: "J. S Kasuni", email: "skasunilearning@gmail.com", courses: 1, enrolled: "Nov 18, 2024" },
-    { name: "A.A.P Perera", email: "pawaniperera322@gmail.com", courses: 2, enrolled: "Nov 7, 2024" },
-    { name: "D.R.P Hewage", email: "rasintha0002@gmail.com", courses: 2, enrolled: "Nov 7, 2024" },
-    { name: "Bigun Vindo", email: "bigunvt@gmail.com", courses: 2, enrolled: "Dec 23, 2024" },
+    { name: "Vishnu Vindo", email: "vishnuv99@gmail.com", courseName: "Introduction to Java", enrolled: "Dec 23, 2024" },
+    { name: "J. S Kasuni", email: "skasunilearning@gmail.com", courseName: "Introduction to C++", enrolled: "Nov 18, 2024" },
+    { name: "A.L.P Perera", email: "pawanipe­rera12@gmail.com", courseName: "Java Intermediate", enrolled: "Nov 7, 2024" },
+    { name: "Plumi Gamage", email: "piyumigi2001@gmail.com", courseName: "Introduction to Python", enrolled: "Dec 23, 2024" },
+    { name: "J. S Kasuni", email: "skasunilearning@gmail.com", courseName: "Introduction to AI", enrolled: "Nov 18, 2024" },
+    { name: "A.A.P Perera", email: "pawaniperera322@gmail.com", courseName: "Introduction to C++", enrolled: "Nov 7, 2024" },
+    { name: "D.R.P Hewage", email: "rasintha0002@gmail.com", courseName: "Introduction to Java", enrolled: "Nov 7, 2024" },
+    { name: "Bigun Vindo", email: "bigunvt@gmail.com", courseName: "Python Intermediate", enrolled: "Dec 23, 2024" },
   ];
 
   return (
@@ -31,7 +31,7 @@ const Students = () => {
             <tr>
               <th className="p-2 border border-gray-300 text-left">Name</th>
               <th className="p-2 border border-gray-300 text-left">Email</th>
-              <th className="p-2 border border-gray-300 text-center">Courses</th>
+              <th className="p-2 border border-gray-300 text-center">Course Name</th>
               <th className="p-2 border border-gray-300 text-center">Enrolled</th>
             </tr>
           </thead>
@@ -40,7 +40,7 @@ const Students = () => {
               <tr key={index} className="border border-gray-300 hover:bg-gray-50">
                 <td className="p-2 border border-gray-300">{student.name}</td>
                 <td className="p-2 border border-gray-300">{student.email}</td>
-                <td className="p-2 border border-gray-300 text-center">{student.courses}</td>
+                <td className="p-2 border border-gray-300 text-center">{student.courseName}</td>
                 <td className="p-2 border border-gray-300 text-center">{student.enrolled}</td>
               </tr>
             ))}

@@ -50,7 +50,7 @@ const UserHeader = () => {
 
 
   return (
-    <header className="flex items-center justify-between px-8 py-2 border-b-2 border-gray-200 ml-[100px] mr-[100px] relative"> {/* Make header relative for absolute dropdown */}
+    <header className="flex items-center justify-between px-8 py-2 border-b-2 border-gray-200 ml-[100px] mr-[100px] font-[Poppins]">
       {/* Logo */}
       <div className="flex items-center">
         <Link to="/Home">
