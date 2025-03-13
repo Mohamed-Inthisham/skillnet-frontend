@@ -5,66 +5,86 @@ import Footer from "../../layout/Footer";
 import { FaLock, FaCaretDown, FaSpinner, FaEdit, FaTrash, FaUpload, FaSave } from "react-icons/fa";
 import javaModule from "../../assets/JavaModule.webp";
 import sysco from "../../assets/sysco.webp";
+import ModuleContentEditPage from "../../components/ModuleContentEdit"; 
 
 const CompanyModulePage = () => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State to manage dropdown
-  const [isUploading, setIsUploading] = useState(false); // State to manage file upload loading
-  const [isProcessing, setIsProcessing] = useState(false); // State to manage model processing
-  const [uploadedFileName, setUploadedFileName] = useState(""); // State to store uploaded file name
-  const [matchedJDs, setMatchedJDs] = useState([]); // State to store matched JDs
-  const [courseImage, setCourseImage] = useState(javaModule); // State to manage course image
-  const [editingField, setEditingField] = useState(null); // State to track which field is being edited
-  const [courseTitle, setCourseTitle] = useState("Introduction to JAVA"); // State for course title
+  const [isUploading, setIsUploading] = useState(false); 
+  const [isProcessing, setIsProcessing] = useState(false); 
+  const [uploadedFileName, setUploadedFileName] = useState(""); 
+  const [matchedJDs, setMatchedJDs] = useState([]); 
+  const [courseImage, setCourseImage] = useState(javaModule); 
+  const [editingField, setEditingField] = useState(null); 
+  const [courseTitle, setCourseTitle] = useState("Introduction to JAVA"); 
   const [introductionText, setIntroductionText] = useState(
     "Kevin Harris took at work, construction capability of k. Job do availored proper headquarters at Boston or Golden League sillips, for some part from wherever job is installed as remediated submicro telefonia will of aiding the KG commode onepaying; that code issue order is reprehended in real-gram well; case citizen offence on legal route position. Excepteur sint occasional duplicate inter per district, such in major call office disassum merit merits of out take-nim."
   ); // State for introduction text
+  const [openLessonIndex, setOpenLessonIndex] = useState(null); 
+  const [isExamDropdownOpen, setIsExamDropdownOpen] = useState(false); 
+  const navigate = useNavigate(); 
 
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen); // Toggle dropdown state
+  const toggleDropdown = (index) => {
+    if (openLessonIndex === index) {
+      setOpenLessonIndex(null); 
+    } else {
+      setOpenLessonIndex(index); 
+    }
+  };
+
+  const toggleExamDropdown = () => {
+    setIsExamDropdownOpen(!isExamDropdownOpen); 
   };
 
   const handleFileUpload = (event) => {
-    const file = event.target.files[0]; // Get the uploaded file
+    const file = event.target.files[0]; 
     if (file) {
-      setIsUploading(true); // Start file upload loading
-      setUploadedFileName(file.name); // Store the file name
+      setIsUploading(true); 
+      setUploadedFileName(file.name); 
 
-      // Simulate file upload process (e.g., API call)
+      
       setTimeout(() => {
-        setIsUploading(false); // Stop file upload loading after 3 seconds
-        setIsProcessing(true); // Start model processing
+        setIsUploading(false); 
+        setIsProcessing(true); 
 
-        // Simulate model processing (e.g., API call)
         setTimeout(() => {
-          setIsProcessing(false); // Stop model processing after 5 seconds
+          setIsProcessing(false); 
           setMatchedJDs([
             "Software Engineer at Sysco Labs",
             "Data Scientist at Tech Corp",
             "Machine Learning Engineer at AI Solutions",
-          ]); // Set matched JDs
-        }, 5000); // Simulate 5 seconds of model processing
-      }, 3000); // Simulate 3 seconds of file upload
+          ]); 
+        }, 5000);
+      }, 3000); 
     }
   };
 
   const handleImageUpload = (event) => {
-    const file = event.target.files[0]; // Get the uploaded image file
+    const file = event.target.files[0]; 
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setCourseImage(e.target.result); // Set the new image
+        setCourseImage(e.target.result); 
       };
-      reader.readAsDataURL(file); // Read the file as a data URL
+      reader.readAsDataURL(file); 
     }
   };
 
   const handleEdit = (field) => {
-    setEditingField(field); // Set the field being edited
+    setEditingField(field); 
   };
 
   const handleSave = () => {
-    setEditingField(null); // Exit edit mode
+    setEditingField(null); 
     console.log("Changes saved!");
+  };
+
+ 
+  const handleFluencyTestClick = () => {
+    navigate("/CompanyAddFluencyTests"); 
+  };
+
+  
+  const handleExamsClick = () => {
+    navigate("/exams");
   };
 
   return (
@@ -74,7 +94,6 @@ const CompanyModulePage = () => {
       <main className="flex-1 py-10 px-20 bg-gray-100">
         {/* Course Header Section */}
         <section className="mb-10 bg-white p-8 rounded-lg shadow-md flex items-center relative">
-          {/* Edit and Save Buttons */}
           <div className="absolute top-4 right-4 flex space-x-2">
             {editingField === "Course Header" ? (
               <button
@@ -160,7 +179,6 @@ const CompanyModulePage = () => {
 
         {/* Introduction Section */}
         <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative">
-          {/* Edit and Save Buttons */}
           <div className="absolute top-4 right-4 flex space-x-2">
             {editingField === "Introduction" ? (
               <button
@@ -212,16 +230,23 @@ const CompanyModulePage = () => {
               "Java If ... Else",
               "June Switch",
             ].map((lesson, index) => (
-              <div key={index} className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                    <span className="text-blue-800 font-semibold">{index + 1}</span>
+              <div key={index}>
+                <div
+                  className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer"
+                  onClick={() => toggleDropdown(index)}
+                >
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                      <span className="text-blue-800 font-semibold">{index + 1}</span>
+                    </div>
+                    <div>
+                      <h3 className="text-sm text-gray-800">{lesson}</h3>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-sm text-gray-800">{lesson}</h3>
-                  </div>
+                  <FaCaretDown className="text-blue-500" />
                 </div>
-                <FaCaretDown className="text-blue-500 cursor-pointer" />
+
+                {openLessonIndex === index && <ModuleContentEditPage />}
               </div>
             ))}
           </div>
@@ -230,17 +255,53 @@ const CompanyModulePage = () => {
         {/* Exam Section */}
         <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative">
           <h2 className="text-xl font-bold text-gray-800 mb-4">Exam</h2>
-          <div className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm">
+          <div
+            className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer"
+            onClick={toggleExamDropdown}
+          >
             <div className="flex items-center">
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
                 <span className="text-blue-800 font-semibold"></span>
               </div>
               <div>
-                <h3 className="text-sm text-gray-800">Start here</h3>
+                <h3 className="text-sm text-gray-800">Update Exams</h3>
               </div>
             </div>
-            <span><FaLock className="text-blue-500 mr-10" /></span>
+            <FaCaretDown className="text-blue-500 mr-10" />
           </div>
+
+          {/* Exam Dropdown Options */}
+          {isExamDropdownOpen && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg shadow-sm">
+              <div
+                className="flex items-center justify-between p-4 mb-2 bg-white rounded-lg shadow-sm cursor-pointer hover:bg-gray-100"
+                onClick={handleFluencyTestClick} 
+              >
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                    <span className="text-blue-800 font-semibold">1</span>
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-gray-800">Fluency Test</h3>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:bg-gray-100"
+                onClick={handleExamsClick} 
+              >
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                    <span className="text-blue-800 font-semibold">2</span>
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-gray-800">Exams</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Certificate Section */}
@@ -255,7 +316,7 @@ const CompanyModulePage = () => {
                 <h3 className="text-sm text-gray-800">Certificate</h3>
               </div>
             </div>
-            <span><FaLock className="text-blue-500 mr-10" /></span>
+            <span><FaCaretDown className="text-blue-500 mr-10" /></span>
           </div>
         </section>
 
@@ -264,28 +325,28 @@ const CompanyModulePage = () => {
           <h2 className="text-xl font-bold text-gray-800 mb-4">Apply For Job</h2>
           <div
             className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer"
-            onClick={toggleDropdown}
+            onClick={() => toggleDropdown(-1)} 
           >
             <div className="flex items-center">
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                {isDropdownOpen ? (
+                {/* {openLessonIndex === -1 ? (
                   <FaCaretDown className="text-blue-800 text-xl" />
                 ) : (
-                  <FaLock className="text-blue-800 text-xl" />
-                )}
+                  <FaCaretDown className="text-blue-800 text-xl" />
+                )} */}
               </div>
               <div>
                 <h3 className="text-sm text-gray-800">CV</h3>
               </div>
             </div>
-            {isDropdownOpen ? (
+            {openLessonIndex === -1 ? (
               <FaCaretDown className="text-blue-500 mr-10" />
             ) : (
-              <FaLock className="text-blue-500 mr-10" />
+              <FaCaretDown className="text-blue-500 mr-10" />
             )}
           </div>
 
-          {isDropdownOpen && (
+          {openLessonIndex === -1 && (
             <div className="mt-4 p-4 bg-gray-50 rounded-lg shadow-sm">
               <input
                 type="file"
