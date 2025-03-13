@@ -8,6 +8,7 @@ export { default as MyLearnings } from "./MyLearnings";
 export { default as ExamRules } from "./ExamRules";
 export { default as EnglishFluency } from "./EnglishFluency";
 export { default as EnglishFluencyTest } from "./EnglishFluencyTest";
+export { default as EssayQuestions } from "./EssayQuestions";
 
 export { default as CompanyDashboard } from "./CompanyDashboard";
 export { default as CompanyStudents } from "./CompanyStudents";
