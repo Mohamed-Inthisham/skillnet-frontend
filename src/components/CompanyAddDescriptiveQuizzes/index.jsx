@@ -40,8 +40,8 @@ const CompanyAddDescriptiveQuizzes = () => {
         <h3 className="text-xl mb-4">Questions</h3>
         
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-2 gap-6 mb-6">
-            <div>
+          {/* <div className="grid grid-cols-2 gap-6 mb-6"> */}
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Course Name*
               </label>
@@ -55,9 +55,9 @@ const CompanyAddDescriptiveQuizzes = () => {
                 <option value="course1">Course 1</option>
                 <option value="course2">Course 2</option>
               </select>
-            </div>
+            </div> */}
             
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Course Content*
               </label>
@@ -71,8 +71,8 @@ const CompanyAddDescriptiveQuizzes = () => {
                 <option value="content1">Content 1</option>
                 <option value="content2">Content 2</option>
               </select>
-            </div>
-          </div>
+            </div> */}
+          {/* </div> */}
 
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-1">

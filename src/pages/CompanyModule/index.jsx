@@ -7,6 +7,9 @@ import javaModule from "../../assets/JavaModule.webp";
 import sysco from "../../assets/sysco.webp";
 
 const CompanyModulePage = () => {
+  
+  const navigate = useNavigate();
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State to manage dropdown
   const [isUploading, setIsUploading] = useState(false); // State to manage file upload loading
   const [isProcessing, setIsProcessing] = useState(false); // State to manage model processing
@@ -228,20 +231,23 @@ const CompanyModulePage = () => {
         </section>
 
         {/* Exam Section */}
-        <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Exam</h2>
-          <div className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                <span className="text-blue-800 font-semibold"></span>
-              </div>
-              <div>
-                <h3 className="text-sm text-gray-800">Start here</h3>
-              </div>
-            </div>
-            <span><FaLock className="text-blue-500 mr-10" /></span>
+    <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative">
+      <h2 className="text-xl font-bold text-gray-800 mb-4">Exam</h2>
+      <div 
+        className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer hover:bg-gray-100 transition-colors"
+        onClick={() => navigate('/CompanyAddDescriptiveQuizzes')}
+      >
+        <div className="flex items-center">
+          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+            <span className="text-blue-800 font-semibold"></span>
           </div>
-        </section>
+          <div>
+            <h3 className="text-sm text-gray-800">Add Exam</h3>
+          </div>
+        </div>
+        <span><FaLock className="text-blue-500 mr-10" /></span>
+      </div>
+    </section>
 
         {/* Certificate Section */}
         <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative">
