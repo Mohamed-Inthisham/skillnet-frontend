@@ -97,6 +97,12 @@ const CompanyCourses = () => {
         >
           Add Certificate <FaPlus className="ml-2" />
         </button>
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded-md flex items-center hover:bg-blue-600"
+          onClick={() => navigate('/CompanyAddDescriptiveQuizzes')}
+        >
+          Add Exam <FaPlus className="ml-2" />
+        </button>
       </div>
 
       <div className="overflow-x-auto shadow-md rounded-lg">
