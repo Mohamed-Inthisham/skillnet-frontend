@@ -48,6 +48,12 @@ const CourseCard = ({
         }
     };
 
+    const handleViewCourseClick = () => {
+        if (onViewCourse) {
+            onViewCourse(_id); // Pass the _id to onViewCourse
+        }
+    }
+
     return (
         <div className="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden p-4 font-[Poppins]">
             {course_image && (
@@ -77,7 +83,7 @@ const CourseCard = ({
                     <button
                         className="bg-blue-500 hover:bg-blue-700 text-white font-medium text-sm py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                         type="button"
-                        onClick={onViewCourse}
+                        onClick={handleViewCourseClick} // Call handleViewCourseClick
                     >
                         View Course
                     </button>
