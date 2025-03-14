@@ -175,7 +175,7 @@ const StudentRegister = () => {
         </div>
 
         {/* Right Section - Sign Up Form */}
-        <div className="w-1/2 bg-neutral-200 p-8 rounded-lg shadow-lg mr-[100px] -mt-10 h-[700px]">
+        <div className="relative  w-1/2 bg-neutral-200 p-8 rounded-lg shadow-lg mr-[100px]  h-[750px]">
           <h2 className="text-3xl font-semibold mb-2 text-center">Sign Up</h2>
           <p className="text-sm text-gray-600 mb-16 text-center before:content-['*'] before:text-red-500 before:mr-1">
             have an account -{" "}
@@ -259,13 +259,13 @@ const StudentRegister = () => {
               {capturedImage && (
                 <div className="mt-2">
                   <p className="text-sm text-gray-700 mb-1">Captured Image:</p>
-                  <img src={capturedImage} alt="Captured" className="max-h-[150px] rounded-lg" />
+                  <img src={capturedImage} alt="Captured" className="max-h-[100px] rounded-lg" />
                 </div>
               )}
             </div>
-            <div className="col-span-2 flex justify-end">
-              <Button text="Register" type="submit" />
-            </div>
+            <div className="absolute bottom-4 right-4">
+    <Button text="Register" type="submit" />
+  </div>
           </form>
         </div>
       </div>
