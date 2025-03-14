@@ -1,3 +1,4 @@
+// ProgramsPage.js
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import UserHeader from "../../layout/UserHeader";
@@ -13,45 +14,119 @@ const ProgramsPage = () => {
     const [apiCourses, setApiCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [enrollSuccessMessage, setEnrollSuccessMessage] = useState("");
 
     useEffect(() => {
-        const fetchCourses = async () => {
+        const fetchData = async () => {
             setLoading(true);
             setError(null);
+
+            const storedCourses = localStorage.getItem("enrolledCourses");
+            let savedCourses = [];
+            try {
+                savedCourses = storedCourses ? JSON.parse(storedCourses) : [];
+                setEnrolledCourses(savedCourses);
+                console.log("useEffect: enrolledCourses loaded from localStorage:", savedCourses);
+                console.log("Structure of savedCourses from localStorage:", savedCourses); // LOG 1: Log savedCourses structure
+            } catch (parseError) {
+                console.error("Error parsing enrolledCourses from localStorage:", parseError);
+                setEnrolledCourses([]);
+            }
+
             try {
                 console.log("Fetching courses from API...");
                 const response = await axios.get("http://localhost:5001/courses");
                 console.log("API Response:", response);
                 console.log("API Response Data:", response.data);
-                setApiCourses(response.data);
-                console.log("apiCourses state updated:", response.data);
-                setLoading(false);
+                console.log("Structure of first apiCourse:", response.data[0]); // LOG 2: Log structure of first apiCourse
+
+                // Correctly enhance apiCourses with isEnrolled status
+                const enhancedApiCourses = response.data.map(course => {
+                    const isCourseEnrolledBool = savedCourses.some(ec => {
+                        console.log(`Comparing apiCourse._id: ${course._id}, enrolledCourse._id: ${ec._id}`); // LOG 3: Log _id comparison
+                        return ec._id === course._id;
+                    });
+                    return {
+                        ...course,
+                        isEnrolled: isCourseEnrolledBool
+                    };
+                });
+                setApiCourses(enhancedApiCourses);
+                console.log("apiCourses state updated:", enhancedApiCourses);
+
+
             } catch (err) {
                 setError(err);
-                setLoading(false);
                 console.error("Error fetching courses:", err);
+            } finally {
+                setLoading(false);
+                console.log("useEffect: Loading set to false");
             }
         };
 
-        fetchCourses();
+        fetchData();
 
-        const storedCourses = localStorage.getItem("enrolledCourses");
-        try {
-            const savedCourses = storedCourses ? JSON.parse(storedCourses) : [];
-            setEnrolledCourses(savedCourses);
-        } catch (parseError) {
-            console.error("Error parsing enrolledCourses from localStorage:", parseError);
-            setEnrolledCourses([]);
-        }
     }, [activeTab]);
 
-    const enrollCourse = (course) => {
-        if (!enrolledCourses.some((c) => c.course_name === course.course_name)) {
-            const updatedCourses = [...enrolledCourses, course];
-            setEnrolledCourses(updatedCourses);
-            localStorage.setItem("enrolledCourses", JSON.stringify(updatedCourses));
+    const enrollCourse = async (course) => {
+        const token = localStorage.getItem("accessToken");
+        const decodedJWTString = localStorage.getItem('decodedJWT');
+        const decodedJWT = decodedJWTString ? JSON.parse(decodedJWTString) : null;
+        const studentEmail = decodedJWT?.sub;
+
+        if (!studentEmail) {
+            console.error("Student email not found in JWT.");
+            alert("Enrollment failed. Could not retrieve user email.");
+            return;
+        }
+
+        try {
+            const response = await axios.post(
+                `http://localhost:5001/courses/${course._id}/enroll`,
+                {
+                    course_id: course._id,
+                    student_email: studentEmail
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                }
+            );
+            console.log("Enrollment Response:", response);
+            console.log("Enrollment Status Code:", response.status);
+            if (response.status === 200 || response.status === 201) {
+                if (!enrolledCourses.some((c) => c._id === course._id)) {
+                    const updatedEnrolledCourses = [...enrolledCourses, course];
+                    setEnrolledCourses(updatedEnrolledCourses);
+                    localStorage.setItem("enrolledCourses", JSON.stringify(updatedEnrolledCourses));
+
+                    // Update apiCourses to mark the course as enrolled
+                    const updatedApiCourses = apiCourses.map(c =>
+                        c._id === course._id ? { ...c, isEnrolled: true } : c
+                    );
+                    setApiCourses(updatedApiCourses);
+
+
+                    setEnrollSuccessMessage(`Congratulations! You have successfully enrolled in the course: ${course.course_name}`);
+                    setTimeout(() => setEnrollSuccessMessage(""), 3000);
+                    console.log("enrolledCourses state after enrollment:", enrolledCourses);
+                }
+            } else {
+                console.error("Enrollment failed:", response.status, response.data);
+                alert("Enrollment failed. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error enrolling in course:", error);
+            if (error.response && error.response.status === 400 && error.response.data && error.response.data.msg === "Already enrolled in this course") {
+                alert("You are already enrolled in this course.");
+            } else {
+                alert("Enrollment failed. Please try again.");
+            }
         }
     };
+
 
     if (loading) {
         return <div className="flex justify-center items-center min-h-screen">Loading courses...</div>;
@@ -86,18 +161,22 @@ const ProgramsPage = () => {
                 </button>
             </div>
 
-            {activeTab === "allPrograms" && (
+             {enrollSuccessMessage && (
+                <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-md z-50" role="alert">
+                    <strong className="font-bold">Success!</strong>
+                    <span className="block sm:inline"> {enrollSuccessMessage}</span>
+                </div>
+            )}
+
+            {activeTab === "allPrograms" && !loading && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-10 max-w-6xl mx-auto">
                     {apiCourses.map((course, index) => (
                         <CourseCard
                             key={index}
-                            course_name={course.course_name}
-                            company_name={course.company_name}
-                            // Construct absolute URLs for images here in ProgramsPage
+                            {...course}
+                            isEnrolled={course.isEnrolled} // Now correctly set from enhanced apiCourses
                             course_image={`http://localhost:5001${course.course_image}` || courseImage}
                             company_image={`http://localhost:5001${course.company_image}` || courseImage}
-                            level={course.level}
-                            uploaded_date={course.uploaded_date}
                             onEnroll={() => enrollCourse(course)}
                         />
                     ))}
@@ -108,17 +187,17 @@ const ProgramsPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-10 max-w-6xl mx-auto">
                     {enrolledCourses.length > 0 ? (
                         enrolledCourses.map((course, index) => (
-                            <CourseCard
-                                key={index}
-                                course_name={course.course_name}
-                                company_name={course.company_name}
-                                // Construct absolute URLs for enrolled courses too
-                                course_image={`http://localhost:5001${course.course_image}` || courseImage}
-                                company_image={`http://localhost:5001${course.company_image}` || courseImage}
-                                level={course.level}
-                                uploaded_date={course.uploaded_date}
-                                status="enrolled"
-                            />
+                            <div key={index}>
+                                <CourseCard
+                                    key={index}
+                                    {...course}
+                                    isEnrolled={true}
+                                    isMyLearningsPage={true}
+                                    course_image={`http://localhost:5001${course.course_image}` || courseImage}
+                                    company_image={`http://localhost:5001${course.company_image}` || courseImage}
+                                    onViewCourse={() => navigate(`/module`)}
+                                />
+                            </div>
                         ))
                     ) : (
                         <p className="text-gray-500 text-center w-full">No courses enrolled yet.</p>

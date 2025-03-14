@@ -32,6 +32,8 @@ const AuthCard = () => {
         const userRole = decodedToken.role; // Access 'role' claim - assuming backend adds it as 'role'
 
         localStorage.setItem("accessToken", accessToken);
+        // **ADD THIS LINE TO STORE DECODED JWT IN LOCALSTORAGE**
+        localStorage.setItem("decodedJWT", JSON.stringify(decodedToken)); // Store decoded JWT as string
 
         if (userRole === "student") {
           navigate("/Home");
