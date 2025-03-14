@@ -205,7 +205,6 @@ const StudentRegister = () => {
               <p className="text-[15px] mb-2">Email</p>
               <InputField
                 type="email" // Changed to email type
-                className="w-[515px]"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -214,7 +213,6 @@ const StudentRegister = () => {
               <p className="text-[15px] mb-2">Password</p>
               <InputField
                 type="password" // Added password field
-                className="w-[515px]"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
