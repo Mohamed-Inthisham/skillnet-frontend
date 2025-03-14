@@ -56,7 +56,7 @@ const MyLearningsPage = () => {
     }, []);
 
     const handleCourseClick = (courseId) => {
-        navigate(`/module`);
+        navigate(`/module/${courseId}`); // Navigate to specific module page with courseId
     };
 
     if (loading) {
@@ -113,10 +113,10 @@ const MyLearningsPage = () => {
                                 key={index}
                                 {...course}
                                 isEnrolled={true}
-                                isMyLearningsPage={true} // Set to true for MyLearningsPage
+                                isMyLearningsPage={true}
                                 course_image={`http://localhost:5001${course.course_image}` || courseImage}
                                 company_image={`http://localhost:5001${course.company_image}` || courseImage}
-                                onViewCourse={() => handleCourseClick(course._id)}
+                                onViewCourse={handleCourseClick} // Pass handleCourseClick as onViewCourse
                             />
                         </div>
                     ))

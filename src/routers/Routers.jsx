@@ -25,11 +25,10 @@ const Routers = () => {
           <Route path="/CompanyAddFluencyTests" element={<CompanyAddFluencyTests />} />
           <Route path="/CompanyAddCertifications" element={<CompanyAddCertifications />} />
           <Route path="/ModuleContent" element={<ModuleContent />} />
-          <Route path="/Module" element={<Module />} />
+          <Route path="/module/:courseId" element={<Module />} /> {/* Add this line */}
           <Route path="/CompanyRecruitment" element={<CompanyRecruitment />} />
           <Route path="/CompanyModule" element={<CompanyModule />} />
           <Route path="/CompanyAddDescriptiveQuizzes" element={<CompanyAddDescriptiveQuizzes />} />
-          
         </Routes>
       </Router>
     </div>
