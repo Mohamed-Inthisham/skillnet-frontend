@@ -1,5 +1,5 @@
 // ProgramsPage.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react"; // Import useCallback
 import { useNavigate } from "react-router-dom";
 import UserHeader from "../../layout/UserHeader";
 import Footer from "../../layout/Footer";
@@ -16,57 +16,55 @@ const ProgramsPage = () => {
     const [error, setError] = useState(null);
     const [enrollSuccessMessage, setEnrollSuccessMessage] = useState("");
 
+    // Use useCallback to memoize fetchData function - prevent unnecessary re-creation
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        const token = localStorage.getItem("accessToken");
+
+        try {
+            console.log(`useEffect triggered for activeTab: ${activeTab}`);
+
+            // 1. Fetch user-specific enrolled courses FIRST and wait for it to complete
+            console.log("Fetching user-specific enrolled courses FIRST from API...");
+            const enrolledResponse = await axios.get("http://localhost:5001/me/enrolled-courses", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            console.log("User-specific enrolled courses API Response:", enrolledResponse);
+            const fetchedEnrolledCourses = enrolledResponse.data; // Store fetched enrolled courses in a variable
+            setEnrolledCourses(fetchedEnrolledCourses); // Update enrolledCourses state
+            console.log("enrolledCourses state updated from API:", fetchedEnrolledCourses);
+
+
+            // 2. Then, fetch all courses and enhance with isEnrolled status
+            console.log("Fetching all courses from API...");
+            const coursesResponse = await axios.get("http://localhost:5001/courses");
+            console.log("All courses API Response:", coursesResponse);
+            console.log("All courses API Response Data:", coursesResponse.data);
+
+            const enhancedApiCourses = coursesResponse.data.map(course => ({
+                ...course,
+                isEnrolled: fetchedEnrolledCourses.some(ec => ec._id === course._id) // Use the *fetchedEnrolledCourses variable*
+            }));
+            setApiCourses(enhancedApiCourses);
+            console.log("apiCourses state updated with isEnrolled:", enhancedApiCourses);
+
+
+        } catch (err) {
+            setError(err);
+            console.error("Error fetching data:", err);
+        } finally {
+            setLoading(false);
+            console.log("useEffect: Loading set to false");
+        }
+    }, [activeTab]); // fetchData is dependent on activeTab
+
     useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            setError(null);
+        fetchData(); // Call the memoized fetchData function
+    }, [activeTab, fetchData]); // useEffect dependency now includes fetchData (memoized) and activeTab
 
-            const storedCourses = localStorage.getItem("enrolledCourses");
-            let savedCourses = [];
-            try {
-                savedCourses = storedCourses ? JSON.parse(storedCourses) : [];
-                setEnrolledCourses(savedCourses);
-                console.log("useEffect: enrolledCourses loaded from localStorage:", savedCourses);
-                console.log("Structure of savedCourses from localStorage:", savedCourses); // LOG 1: Log savedCourses structure
-            } catch (parseError) {
-                console.error("Error parsing enrolledCourses from localStorage:", parseError);
-                setEnrolledCourses([]);
-            }
-
-            try {
-                console.log("Fetching courses from API...");
-                const response = await axios.get("http://localhost:5001/courses");
-                console.log("API Response:", response);
-                console.log("API Response Data:", response.data);
-                console.log("Structure of first apiCourse:", response.data[0]); // LOG 2: Log structure of first apiCourse
-
-                // Correctly enhance apiCourses with isEnrolled status
-                const enhancedApiCourses = response.data.map(course => {
-                    const isCourseEnrolledBool = savedCourses.some(ec => {
-                        console.log(`Comparing apiCourse._id: ${course._id}, enrolledCourse._id: ${ec._id}`); // LOG 3: Log _id comparison
-                        return ec._id === course._id;
-                    });
-                    return {
-                        ...course,
-                        isEnrolled: isCourseEnrolledBool
-                    };
-                });
-                setApiCourses(enhancedApiCourses);
-                console.log("apiCourses state updated:", enhancedApiCourses);
-
-
-            } catch (err) {
-                setError(err);
-                console.error("Error fetching courses:", err);
-            } finally {
-                setLoading(false);
-                console.log("useEffect: Loading set to false");
-            }
-        };
-
-        fetchData();
-
-    }, [activeTab]);
 
     const enrollCourse = async (course) => {
         const token = localStorage.getItem("accessToken");
@@ -97,22 +95,19 @@ const ProgramsPage = () => {
             console.log("Enrollment Response:", response);
             console.log("Enrollment Status Code:", response.status);
             if (response.status === 200 || response.status === 201) {
-                if (!enrolledCourses.some((c) => c._id === course._id)) {
-                    const updatedEnrolledCourses = [...enrolledCourses, course];
-                    setEnrolledCourses(updatedEnrolledCourses);
-                    localStorage.setItem("enrolledCourses", JSON.stringify(updatedEnrolledCourses));
+                const updatedEnrolledCourses = [...enrolledCourses, course];
+                setEnrolledCourses(updatedEnrolledCourses);
 
-                    // Update apiCourses to mark the course as enrolled
-                    const updatedApiCourses = apiCourses.map(c =>
-                        c._id === course._id ? { ...c, isEnrolled: true } : c
-                    );
-                    setApiCourses(updatedApiCourses);
+                const updatedApiCourses = apiCourses.map(c =>
+                    c._id === course._id ? { ...c, isEnrolled: true } : c
+                );
+                setApiCourses(updatedApiCourses);
 
 
-                    setEnrollSuccessMessage(`Congratulations! You have successfully enrolled in the course: ${course.course_name}`);
-                    setTimeout(() => setEnrollSuccessMessage(""), 3000);
-                    console.log("enrolledCourses state after enrollment:", enrolledCourses);
-                }
+                setEnrollSuccessMessage(`Congratulations! You have successfully enrolled in the course: ${course.course_name}`);
+                setTimeout(() => setEnrollSuccessMessage(""), 3000);
+                console.log("enrolledCourses state after enrollment:", updatedEnrolledCourses);
+
             } else {
                 console.error("Enrollment failed:", response.status, response.data);
                 alert("Enrollment failed. Please try again.");
@@ -125,6 +120,10 @@ const ProgramsPage = () => {
                 alert("Enrollment failed. Please try again.");
             }
         }
+    };
+
+    const isCourseEnrolled = (courseId) => {
+        return enrolledCourses.some(enrolledCourse => enrolledCourse._id === courseId);
     };
 
 
@@ -174,7 +173,7 @@ const ProgramsPage = () => {
                         <CourseCard
                             key={index}
                             {...course}
-                            isEnrolled={course.isEnrolled} // Now correctly set from enhanced apiCourses
+                            isEnrolled={course.isEnrolled}
                             course_image={`http://localhost:5001${course.course_image}` || courseImage}
                             company_image={`http://localhost:5001${course.company_image}` || courseImage}
                             onEnroll={() => enrollCourse(course)}
@@ -195,7 +194,7 @@ const ProgramsPage = () => {
                                     isMyLearningsPage={true}
                                     course_image={`http://localhost:5001${course.course_image}` || courseImage}
                                     company_image={`http://localhost:5001${course.company_image}` || courseImage}
-                                    onViewCourse={() => navigate(`/module`)}
+                                    onViewCourse={() => navigate(`/module/${course._id}`)}
                                 />
                             </div>
                         ))
