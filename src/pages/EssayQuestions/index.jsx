@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Timer } from 'lucide-react';
 import UserHeader from "../../layout/UserHeader";
 
-
 const sampleQuiz = {
-  
   questions: [
     {
       id: 1,
@@ -30,6 +28,7 @@ const EssayQuestionsPage = () => {
   const [slideDirection, setSlideDirection] = useState('right');
   const [timeLeft, setTimeLeft] = useState(sampleQuiz.questions[0].timeLimit);
   const [isSliding, setIsSliding] = useState(false);
+  const WORD_LIMIT = 50; // Maximum word limit
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -87,6 +86,13 @@ const EssayQuestionsPage = () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  const getWordCount = (text) => {
+    return text ? text.trim().split(/\s+/).length : 0;
+  };
+
+  const currentAnswer = answers[sampleQuiz.questions[currentQuestionIndex].id] || '';
+  const wordCount = getWordCount(currentAnswer);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <UserHeader />
@@ -127,17 +133,27 @@ const EssayQuestionsPage = () => {
                     : 'translate-x-0 opacity-100'
                 }`}
               >
-                <h2 className="text-xl font-medium text-gray-900 mb-4">
-                  {sampleQuiz.questions[currentQuestionIndex].question}
-                </h2>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-medium text-gray-900">
+                    {sampleQuiz.questions[currentQuestionIndex].question}
+                  </h2>
+                  <span className="text-sm text-gray-500 ml-4 whitespace-nowrap">
+                    (With in {WORD_LIMIT} Words)
+                  </span>
+                </div>
 
-                <textarea
-                  className="w-full h-48 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Type your answer here..."
-                  value={answers[sampleQuiz.questions[currentQuestionIndex].id] || ''}
-                  onChange={handleAnswerChange}
-                  disabled={isSliding}
-                />
+                <div className="relative">
+                  <textarea
+                    className="w-full h-48 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Type your answer here..."
+                    value={currentAnswer}
+                    onChange={handleAnswerChange}
+                    disabled={isSliding}
+                  />
+                  <div className={`text-sm mt-2 text-right ${wordCount > WORD_LIMIT ? 'text-red-500' : 'text-gray-500'}`}>
+                    {wordCount} / {WORD_LIMIT} words
+                  </div>
+                </div>
               </div>
             </div>
           </div>
