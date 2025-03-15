@@ -1,7 +1,8 @@
+// ModuleContent.js
 import React, { useState, useRef, useEffect } from 'react';
 import UserHeader from "../../layout/UserHeader";
 import Footer from "../../layout/Footer";
-import { Link, useParams } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom'; // Import useLocation
 import axios from 'axios';
 import { FaSpinner } from 'react-icons/fa';
 
@@ -14,7 +15,12 @@ const ModuleContent = () => {
     const [loadingMcq, setLoadingMcq] = useState(true);
     const [errorMcq, setErrorMcq] = useState(null);
     const [answerFeedback, setAnswerFeedback] = useState('');
-    const { contentId } = useParams();
+    const [isAnswerCorrect, setIsAnswerCorrect] = useState(false);
+    const { contentId } = useParams(); // Get contentId from params - for fetching content
+    const location = useLocation(); // Use useLocation hook
+    const navigate = useNavigate();
+    const contents = location.state?.contents || [];
+    const courseIdFromState = location.state?.courseId; // Get courseId from location.state
 
     useEffect(() => {
         const fetchContentData = async () => {
@@ -63,6 +69,7 @@ const ModuleContent = () => {
         console.log("handleOptionSelect called with index:", optionIndex);
         setSelectedOption(optionIndex);
         setAnswerFeedback('');
+        setIsAnswerCorrect(false);
     };
 
     const checkAnswer = async () => {
@@ -84,17 +91,48 @@ const ModuleContent = () => {
 
                 if (response.data.is_correct) {
                     setAnswerFeedback('Correct Answer!');
+                    setIsAnswerCorrect(true);
                 } else {
                     setAnswerFeedback('Wrong Answer. Please try again.');
+                    setIsAnswerCorrect(false);
                 }
             } catch (error) {
                 console.error("Error checking answer:", error);
                 setAnswerFeedback('Error checking answer. Please try again later.');
+                setIsAnswerCorrect(false);
             }
         } else {
             alert("MCQ data is not available to check the answer.");
+            setIsAnswerCorrect(false);
         }
     };
+
+    const currentContentIndex = contents.findIndex(c => c._id === contentId);
+    const previousContentId = currentContentIndex > 0 ? contents[currentContentIndex - 1]._id : null;
+    const nextContentId = currentContentIndex < contents.length - 1 ? contents[currentContentIndex + 1]._id : null;
+    const isLastContent = nextContentId === null;
+
+    const goToPreviousContent = (e) => {
+        e.preventDefault();
+        if (previousContentId) {
+            navigate(`/module-content/${previousContentId}`, { state: { contents, courseId: courseIdFromState } }); // Pass courseIdFromState
+        }
+    };
+
+    const goToNextContent = (e) => {
+        e.preventDefault();
+        if (isLastContent) {
+            if (isAnswerCorrect) {
+                console.log("isLastContent:", isLastContent);
+                console.log("Redirecting to module page: /module/" + courseIdFromState);
+                navigate(`/module/${courseIdFromState}`); // Redirect to specific module page using courseIdFromState
+            }
+        }
+        else if (nextContentId && isAnswerCorrect) {
+            navigate(`/module-content/${nextContentId}`, { state: { contents, courseId: courseIdFromState } }); // Pass courseIdFromState
+        }
+    };
+
 
     if (loadingContent) {
         return <div className="flex justify-center items-center min-h-screen">
@@ -203,8 +241,16 @@ const ModuleContent = () => {
 
                     {/* Navigation Buttons */}
                     <div className="flex justify-between">
-                        <Link to="/previous" className="border rounded-lg px-6 py-2 hover:bg-gray-100">Previous</Link>
-                        <Link to="/next" className="border rounded-lg px-6 py-2 hover:bg-gray-100">Next</Link>
+                        <button onClick={goToPreviousContent} disabled={!previousContentId} className={`border rounded-lg px-6 py-2 hover:bg-gray-100 ${!previousContentId ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                            Previous
+                        </button>
+                        <button
+                            onClick={goToNextContent}
+                            disabled={!isAnswerCorrect}
+                            className={`border rounded-lg px-6 py-2 hover:bg-gray-100 ${!isAnswerCorrect ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            {isLastContent ? 'Finish' : 'Next'}
+                        </button>
                     </div>
                 </div>
             </main>

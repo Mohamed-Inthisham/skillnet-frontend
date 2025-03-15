@@ -1,14 +1,15 @@
+// Module.js (formerly ModulePage.js)
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import UserHeader from "../../layout/UserHeader";
 import Footer from "../../layout/Footer";
-import ModuleContentEdiPage from "../../components/ModuleContentEdit";
+import ModuleContentEdiPage from "../../components/ModuleContentEdit"; // Note: Check if this is used
 import { FaLock, FaCaretDown, FaSpinner } from "react-icons/fa";
-import javaModule from "../../assets/JavaModule.webp"; // Placeholder, will be replaced with fetched image
-import sysco from "../../assets/sysco.webp"; // Placeholder, will be replaced with fetched image
+import javaModule from "../../assets/JavaModule.webp";
+import sysco from "../../assets/sysco.webp";
 import axios from "axios";
 
-const ModulePage = ({ lesson, index }) => {
+const Module = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -19,7 +20,7 @@ const ModulePage = ({ lesson, index }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const { courseId } = useParams(); // Get courseId from route params
+    const { courseId } = useParams(); // Get courseId from route params - This is KEY
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -27,6 +28,7 @@ const ModulePage = ({ lesson, index }) => {
             setLoading(true);
             setError(null);
             try {
+                console.log("Module.js: Fetching course data for courseId:", courseId); // Debugging log - Verify courseId here
                 const courseResponse = await axios.get(`http://localhost:5001/courses/${courseId}`);
                 setCourse(courseResponse.data);
 
@@ -36,12 +38,18 @@ const ModulePage = ({ lesson, index }) => {
             } catch (err) {
                 setError(err);
                 setLoading(false);
-                console.error("Error fetching course data:", err);
+                console.error("Module.js: Error fetching course data:", err);
             }
         };
 
-        fetchCourseData();
-    }, [courseId]);
+        if (courseId) { // Only fetch if courseId is available
+            fetchCourseData();
+        } else {
+            console.warn("Module.js: courseId is undefined. Course data will not be fetched.");
+            setLoading(false); // Stop loading if no courseId
+            setError(new Error("Course ID is missing.")); // Set an error state
+        }
+    }, [courseId]); // Dependency array includes courseId
 
     const toggleDropdown = () => {
         setIsDropdownOpen(!isDropdownOpen);
@@ -70,10 +78,10 @@ const ModulePage = ({ lesson, index }) => {
     };
 
 
-    const handleClick = (event, contentId) => { // Updated handleClick function
+    const handleClick = (event, contentId) => {
         event.preventDefault();
-        console.log("Lesson clicked:", contentId);
-        navigate(`/module-content/${contentId}`); // Navigate to /module-content/:contentId
+        console.log("Module.js: Lesson clicked:", contentId);
+        navigate(`/module-content/${contentId}`, { state: { contents, courseId } });
     };
 
     if (loading) {
@@ -93,10 +101,10 @@ const ModulePage = ({ lesson, index }) => {
             <UserHeader />
 
             <main className="flex-1 py-10 px-20 bg-gray-100">
-
+                {/* ... (rest of Module.js JSX - same as before) */}
                 <section className="mb-10 bg-white p-8 rounded-lg shadow-md flex items-center">
                     <img
-                        src={`http://localhost:5001${course.course_image}` || javaModule} // Use fetched course image or placeholder
+                        src={`http://localhost:5001${course.course_image}` || javaModule}
                         alt={course.course_name}
                         className="w-78 h-48 rounded-lg mr-8"
                     />
@@ -104,7 +112,7 @@ const ModulePage = ({ lesson, index }) => {
                         <h1 className="text-2xl font-bold text-gray-800 mb-20">{course.course_name || "Course Name Missing"}</h1>
                         <div className="mb-10 flex items-center">
                             <img
-                                src={`http://localhost:5001${course.company_image}` || sysco} // Use fetched company image or placeholder
+                                src={`http://localhost:5001${course.company_image}` || sysco}
                                 alt={course.company_name}
                                 className="w-8 h-8 rounded-lg mr-4"
                             />
@@ -112,22 +120,21 @@ const ModulePage = ({ lesson, index }) => {
                         </div>
                     </div>
                     <div className="space-y-1 mb-25 ml-20 mt-10">
-                        {/* You might need to fetch these counts from the backend if available */}
                         <p className="text-sm text-gray-600 flex items-center">
                             <span className="w-2 h-2 bg-gray-600 rounded-full mr-2"></span>
-                            {contents.length} Lessons {/* Display actual lesson count */}
+                            {contents.length} Lessons
                         </p>
                         <p className="text-sm text-gray-600 flex items-center">
                             <span className="w-2 h-2 bg-gray-600 rounded-full mr-2"></span>
-                            10 Quizzes {/* Placeholder - replace with actual data if available */}
+                            10 Quizzes
                         </p>
                         <p className="text-sm text-gray-600 flex items-center">
                             <span className="w-2 h-2 bg-gray-600 rounded-full mr-2"></span>
-                            1 Hr Exam {/* Placeholder - replace with actual data if available */}
+                            1 Hr Exam
                         </p>
                         <p className="text-sm text-gray-600 flex items-center">
                             <span className="w-2 h-2 bg-gray-600 rounded-full mr-2"></span>
-                            Professional Certificate {/* Placeholder - replace with actual data if available */}
+                            Professional Certificate
                         </p>
                     </div>
                 </section>
@@ -136,16 +143,16 @@ const ModulePage = ({ lesson, index }) => {
                     <div>
                         <h2 className="text-xl font-bold text-gray-800 mb-4">Introduction</h2>
                         <p className="text-gray-600">
-                            {course.introduction || "Course introduction is missing."} {/* Display fetched introduction */}
+                            {course.introduction || "Course introduction is missing."}
                         </p>
                     </div>
                     <h2 className="text-xl font-bold text-gray-800 mb-4 mt-10">Lessons</h2>
                     <div className="">
-                        {contents.map((content, index) => ( // Map over fetched contents
+                        {contents.map((content, index) => (
                             <div
-                                onClick={(e) => handleClick(e, content._id)} // Pass content._id to handleClick
+                                onClick={(e) => handleClick(e, content._id)}
                                 className="block mb-4 cursor-pointer"
-                                key={content._id} // Use content _id as key
+                                key={content._id}
                             >
                                 <div className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm w-auto h-22">
                                     <div className="flex items-center">
@@ -153,14 +160,14 @@ const ModulePage = ({ lesson, index }) => {
                                             <span className="text-blue-800 font-semibold">{index + 1}</span>
                                         </div>
                                         <div>
-                                            <h3 className="text-sm text-gray-800">{content.lesson_name}</h3> {/* Display lesson name */}
+                                            <h3 className="text-sm text-gray-800">{content.lesson_name}</h3>
                                         </div>
                                     </div>
                                     <span
                                         className={`font-semibold text-sm px-3 py-1 rounded ${index === 0 ? "bg-green-600 text-white" : "text-blue-400"
                                             }`}
                                     >
-                                        {index === 0 ? "Done" : "Incomplete"} {/* Placeholder - replace with actual status if available */}
+                                        {index === 0 ? "Done" : "Incomplete"}
                                     </span>
                                 </div>
                             </div>
@@ -273,4 +280,4 @@ const ModulePage = ({ lesson, index }) => {
     );
 };
 
-export default ModulePage;
+export default Module;
