@@ -50,7 +50,7 @@ const CourseCard = ({
 
     const handleViewCourseClick = () => {
         if (onViewCourse) {
-            onViewCourse(_id); // Pass the _id to onViewCourse
+            onViewCourse(_id);
         }
     }
 
@@ -83,7 +83,7 @@ const CourseCard = ({
                     <button
                         className="bg-blue-500 hover:bg-blue-700 text-white font-medium text-sm py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                         type="button"
-                        onClick={handleViewCourseClick} // Call handleViewCourseClick
+                        onClick={handleViewCourseClick}
                     >
                         View Course
                     </button>
