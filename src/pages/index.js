@@ -23,6 +23,7 @@ export { default as ModuleContent } from "./ModuleContent";
 export { default as CompanyAddDescriptiveQuizzes } from "./CompanyAddDescriptiveQuizzes";
 export { default as CompanyModule} from "./CompanyModule";
 export { default as ExamResult} from "./ExamResult";
+export { default as JobApplicationPortal} from "./JobApplicationPortal";
 
 
 export { default as Module } from "./Module";

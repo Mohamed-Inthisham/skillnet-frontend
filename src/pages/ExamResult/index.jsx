@@ -1,7 +1,7 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Award, CheckCircle2, XCircle, ArrowLeft, Briefcase } from 'lucide-react';
 
-// Mock exam data - replace with actual data from your application
 const examResults = {
   studentName: "John Doe",
   totalQuestions: 3,
@@ -12,8 +12,13 @@ const examResults = {
 };
 
 function ExamResults() {
+  const navigate = useNavigate();
   const percentage = (examResults.totalMarks / examResults.maxMarks) * 100;
   const passed = percentage >= examResults.passingScore;
+
+  const handleApplyForJobs = () => {
+    navigate('/JobApplicationPortal');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -59,7 +64,10 @@ function ExamResults() {
                   <Award className="w-5 h-5 mr-2" />
                   Download Certificate
                 </button>
-                <button className="w-full inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <button 
+                  className="w-full inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  onClick={handleApplyForJobs}
+                >
                   <Briefcase className="w-5 h-5 mr-2" />
                   Apply for Jobs
                 </button>
