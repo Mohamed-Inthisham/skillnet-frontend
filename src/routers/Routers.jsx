@@ -30,6 +30,7 @@ const Routers = () => {
           <Route path="/CompanyModule" element={<CompanyModule />} />
           <Route path="/CompanyAddDescriptiveQuizzes" element={<CompanyAddDescriptiveQuizzes />} />
           <Route path="/ExamResult" element={<ExamResult />} />
+          <Route path="/module-content/:contentId" element={<ModuleContent />} />
 
         </Routes>
       </Router>
