@@ -70,10 +70,10 @@ const ModulePage = ({ lesson, index }) => {
     };
 
 
-    const handleClick = (event, lessonName) => {
+    const handleClick = (event, contentId) => { // Updated handleClick function
         event.preventDefault();
-        console.log("Lesson clicked:", lessonName); // Log lesson name instead of lesson object
-        navigate('/ModuleContent', { state: { lessonName: lessonName } }); // Pass lesson name in state
+        console.log("Lesson clicked:", contentId);
+        navigate(`/module-content/${contentId}`); // Navigate to /module-content/:contentId
     };
 
     if (loading) {
@@ -143,7 +143,7 @@ const ModulePage = ({ lesson, index }) => {
                     <div className="">
                         {contents.map((content, index) => ( // Map over fetched contents
                             <div
-                                onClick={(e) => handleClick(e, content.lesson_name)} // Pass lesson_name to handleClick
+                                onClick={(e) => handleClick(e, content._id)} // Pass content._id to handleClick
                                 className="block mb-4 cursor-pointer"
                                 key={content._id} // Use content _id as key
                             >
