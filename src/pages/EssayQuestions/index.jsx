@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Timer } from 'lucide-react';
-import UserHeader from "../../layout/UserHeader";
+import ExamMonitorLayout from "../../layout/ExamMonitor";
 
 const sampleQuiz = {
+  
   questions: [
     {
       id: 1,
@@ -29,6 +31,8 @@ const EssayQuestionsPage = () => {
   const [timeLeft, setTimeLeft] = useState(sampleQuiz.questions[0].timeLimit);
   const [isSliding, setIsSliding] = useState(false);
   const WORD_LIMIT = 50; // Maximum word limit
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -78,6 +82,7 @@ const EssayQuestionsPage = () => {
   const handleQuizSubmit = () => {
     console.log('Quiz submitted:', answers);
     // Handle the quiz submission here
+    navigate("/ExamResult");
   };
 
   const formatTime = (seconds) => {
@@ -94,111 +99,112 @@ const EssayQuestionsPage = () => {
   const wordCount = getWordCount(currentAnswer);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <UserHeader />
-
-      {/* Main content */}
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          {/* Progress bar */}
-          <div className="h-2 bg-gray-200">
-            <div
-              className="h-full bg-blue-500 transition-all duration-300"
-              style={{ width: `${((currentQuestionIndex + 1) / sampleQuiz.questions.length) * 100}%` }}
-            />
-          </div>
-
-          {/* Question content */}
-          <div className="p-6 relative">
-            {/* Timer */}
-            <div className="flex items-center justify-end mb-4 text-gray-600">
-              <Timer className="w-5 h-5 mr-2" />
-              <span className="font-mono">{formatTime(timeLeft)}</span>
-            </div>
-
-            {/* Question number */}
-            <div className="text-sm text-gray-500 mb-2">
-              Question {currentQuestionIndex + 1} of {sampleQuiz.questions.length}
-            </div>
-
-            {/* Questions container */}
-            <div className="relative overflow-hidden">
-              {/* Current question */}
+    <ExamMonitorLayout>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center font-[Poppins]">
+        {/* Main content */}
+        <main className="max-w-4xl w-full px-4 py-8 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden w-full">
+            {/* Progress bar */}
+            <div className="h-2 bg-gray-200">
               <div
-                className={`transform transition-all duration-300 ${
-                  isSliding
-                    ? slideDirection === 'right'
-                      ? '-translate-x-full opacity-0'
-                      : 'translate-x-full opacity-0'
-                    : 'translate-x-0 opacity-100'
-                }`}
-              >
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-medium text-gray-900">
-                    {sampleQuiz.questions[currentQuestionIndex].question}
-                  </h2>
-                  <span className="text-sm text-gray-500 ml-4 whitespace-nowrap">
-                    (With in {WORD_LIMIT} Words)
-                  </span>
-                </div>
-
-                <div className="relative">
-                  <textarea
-                    className="w-full h-48 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Type your answer here..."
-                    value={currentAnswer}
-                    onChange={handleAnswerChange}
-                    disabled={isSliding}
-                  />
-                  <div className={`text-sm mt-2 text-right ${wordCount > WORD_LIMIT ? 'text-red-500' : 'text-gray-500'}`}>
-                    {wordCount} / {WORD_LIMIT} words
+                className="h-full bg-blue-500 transition-all duration-300"
+                style={{ width: `${((currentQuestionIndex + 1) / sampleQuiz.questions.length) * 100}%` }}
+              />
+            </div>
+  
+            {/* Question content */}
+            <div className="p-6 relative">
+              {/* Timer */}
+              <div className="flex items-center justify-end mb-4 text-gray-600">
+                <Timer className="w-5 h-5 mr-2" />
+                <span className="font-mono">{formatTime(timeLeft)}</span>
+              </div>
+  
+              {/* Question number */}
+              <div className="text-sm text-gray-500 mb-2">
+                Question {currentQuestionIndex + 1} of {sampleQuiz.questions.length}
+              </div>
+  
+              {/* Questions container */}
+              <div className="relative overflow-hidden">
+                {/* Current question */}
+                <div
+                  className={`transform transition-all duration-300 ${
+                    isSliding
+                      ? slideDirection === 'right'
+                        ? '-translate-x-full opacity-0'
+                        : 'translate-x-full opacity-0'
+                      : 'translate-x-0 opacity-100'
+                  }`}
+                >
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-medium text-gray-900">
+                      {sampleQuiz.questions[currentQuestionIndex].question}
+                    </h2>
+                    <span className="text-sm text-gray-500 ml-4 whitespace-nowrap">
+                      (Within {WORD_LIMIT} Words)
+                    </span>
+                  </div>
+  
+                  <div className="relative">
+                    <textarea
+                      className="w-full h-48 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Type your answer here..."
+                      value={currentAnswer}
+                      onChange={handleAnswerChange}
+                      disabled={isSliding}
+                    />
+                    <div className={`text-sm mt-2 text-right ${wordCount > WORD_LIMIT ? 'text-red-500' : 'text-gray-500'}`}>
+                      {wordCount} / {WORD_LIMIT} words
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Navigation */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between">
-            <button
-              onClick={handlePrevious}
-              disabled={currentQuestionIndex === 0 || isSliding}
-              className={`flex items-center px-4 py-2 rounded-md transition-all duration-200 ${
-                currentQuestionIndex === 0 || isSliding
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-              }`}
-            >
-              <ChevronLeft className="w-5 h-5 mr-1" />
-              Previous
-            </button>
-
-            {currentQuestionIndex === sampleQuiz.questions.length - 1 ? (
+  
+            {/* Navigation */}
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between">
               <button
-                onClick={handleQuizSubmit}
-                className="bg-green-600 text-white hover:bg-green-700 px-4 py-2 rounded-md transition-all duration-200 flex items-center"
-              >
-                Submit Quiz
-              </button>
-            ) : (
-              <button
-                onClick={handleNext}
-                disabled={currentQuestionIndex === sampleQuiz.questions.length - 1 || isSliding}
+                onClick={handlePrevious}
+                disabled={currentQuestionIndex === 0 || isSliding}
                 className={`flex items-center px-4 py-2 rounded-md transition-all duration-200 ${
-                  currentQuestionIndex === sampleQuiz.questions.length - 1 || isSliding
+                  currentQuestionIndex === 0 || isSliding
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
                 }`}
               >
-                Next
-                <ChevronRight className="w-5 h-5 ml-1" />
+                <ChevronLeft className="w-5 h-5 mr-1" />
+                Previous
               </button>
-            )}
+  
+              {currentQuestionIndex === sampleQuiz.questions.length - 1 ? (
+                <button
+                  onClick={handleQuizSubmit}
+                  className="bg-green-600 text-white hover:bg-green-700 px-4 py-2 rounded-md transition-all duration-200 flex items-center"
+                >
+                  Submit Quiz
+                </button>
+              ) : (
+                <button
+                  onClick={handleNext}
+                  disabled={currentQuestionIndex === sampleQuiz.questions.length - 1 || isSliding}
+                  className={`flex items-center px-4 py-2 rounded-md transition-all duration-200 ${
+                    currentQuestionIndex === sampleQuiz.questions.length - 1 || isSliding
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                >
+                  Next
+                  <ChevronRight className="w-5 h-5 ml-1" />
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </ExamMonitorLayout>
   );
+  
 };
 
 export default EssayQuestionsPage;

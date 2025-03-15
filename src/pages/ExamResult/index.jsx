@@ -1,6 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Award, CheckCircle2, XCircle, ArrowLeft, Briefcase } from 'lucide-react';
+import UserHeader from "../../layout/UserHeader";
+import Footer from "../../layout/Footer";
+
 
 const examResults = {
   studentName: "John Doe",
@@ -21,7 +24,10 @@ function ExamResults() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div>
+    <UserHeader/>
+    <div className="min-h-screen bg-gray-50 py-15 px-4 sm:px-6 lg:px-8 font-[Poppins]">
+      
       <div className="max-w-2xl mx-auto">
         <div className="bg-white shadow rounded-lg overflow-hidden">
           {/* Header */}
@@ -35,7 +41,7 @@ function ExamResults() {
             <div className="mt-8 flex justify-center">
               <div className="bg-gray-50 rounded-full p-8 w-48 h-48 flex flex-col items-center justify-center border-4 border-blue-500">
                 <span className="text-4xl font-bold text-blue-600">{examResults.totalMarks}/{examResults.maxMarks}</span>
-                <span className="text-lg font-medium text-gray-800 mt-2">Overall Marks</span>
+                <span className="text-sm font-medium text-gray-800 mt-2">Overall Marks</span>
                 <span className="text-sm text-gray-600 mt-1">{percentage.toFixed(1)}%</span>
               </div>
             </div>
@@ -81,6 +87,8 @@ function ExamResults() {
         </div>
       </div>
     </div>
+    <Footer bgColor="bg-black" textColor="text-white" />
+  </div>  
   );
 }
 
