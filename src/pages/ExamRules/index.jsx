@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 
 const ExamRules = () => {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen font-[Poppins]">
       <UserHeader />
       
       <main className="flex-grow flex justify-center items-center p-10">
