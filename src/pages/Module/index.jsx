@@ -8,6 +8,7 @@ import { FaLock } from "react-icons/fa";
 import javaModule from "../../assets/JavaModule.webp";
 import sysco from "../../assets/sysco.webp";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode"; // Correct import: Named import
 
 const Module = () => {
     const [course, setCourse] = useState(null);
@@ -17,6 +18,50 @@ const Module = () => {
 
     const { courseId } = useParams(); // Get courseId from route params - This is KEY
     const navigate = useNavigate();
+
+    // Function to get logged-in user ID from JWT (using 'sub' claim)
+    const getLoggedInUserId = () => {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+            console.warn("No token found in localStorage (accessToken)");
+            return null;
+        }
+        try {
+            const decodedToken = jwtDecode(token);
+            // **Use 'sub' claim as user ID**
+            const userId = decodedToken.sub;
+            if (!userId) {
+                console.warn("User ID (sub) not found in JWT payload"); // Updated warning
+                return null;
+            }
+            return userId;
+        } catch (error) {
+            console.error("Error decoding JWT:", error);
+            return null;
+        }
+    };
+
+    // Function to get logged-in user email from JWT (using 'sub' claim - assuming email is in 'sub')
+    const getLoggedInUserEmail = () => {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+            console.warn("No token found in localStorage (accessToken)");
+            return null;
+        }
+        try {
+            const decodedToken = jwtDecode(token);
+            // **Use 'sub' claim as studentEmail (if email is in 'sub')**
+            const studentEmail = decodedToken.sub;
+            if (!studentEmail) {
+                console.warn("Student Email (sub) not found in JWT payload"); // Updated warning
+                return null;
+            }
+            return studentEmail;
+        } catch (error) {
+            console.error("Error decoding JWT:", error);
+            return null;
+        }
+    };
 
     useEffect(() => {
         const fetchCourseData = async () => {
@@ -146,7 +191,16 @@ const Module = () => {
                     <div>
                         <h2 className="text-xl font-bold text-gray-800 mb-4 mt-10">Exam</h2>
                         <div
-                            onClick={() => navigate('/ExamRules')} // Add onClick to navigate to /ExamRules
+                            onClick={() => {
+                                const userId = getLoggedInUserId();
+                                const studentEmail = getLoggedInUserEmail(); // Get student email
+                                if (userId && studentEmail) { // Check for both userId and studentEmail
+                                    navigate('/ExamRules', { state: { userId: userId, courseId: courseId, studentEmail: studentEmail } }); // Pass studentEmail
+                                } else {
+                                    console.warn("User ID or Student Email not available, cannot navigate to ExamRules");
+                                    // Optionally redirect to login: navigate('/login');
+                                }
+                            }}
                             className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer" // Added cursor-pointer for better UX
                         >
                             <div className="flex items-center">
@@ -179,7 +233,16 @@ const Module = () => {
                     <div>
                         <h2 className="text-xl font-bold text-gray-800 mb-4 mt-10">Apply For Job</h2>
                         <div
-                            onClick={() => navigate('/JobApplicationPortal')} // Add onClick to navigate to /JobApplicationPortal
+                            onClick={() => {
+                                const userId = getLoggedInUserId();
+                                const studentEmail = getLoggedInUserEmail(); // Get student email
+                                if (userId && studentEmail) { // Check for both userId and studentEmail
+                                    navigate('/JobApplicationPortal', { state: { userId: userId, courseId: courseId, studentEmail: studentEmail } }); // Pass studentEmail
+                                } else {
+                                    console.warn("User ID or Student Email not available, cannot navigate to JobApplicationPortal");
+                                    // Optionally redirect to login: navigate('/login');
+                                }
+                            }}
                             className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer" // Added cursor-pointer for better UX
                         >
                             <div className="flex items-center">
