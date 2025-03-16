@@ -4,17 +4,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import UserHeader from "../../layout/UserHeader";
 import Footer from "../../layout/Footer";
 import ModuleContentEdiPage from "../../components/ModuleContentEdit"; // Note: Check if this is used
-import { FaLock, FaCaretDown, FaSpinner } from "react-icons/fa";
+import { FaLock } from "react-icons/fa";
 import javaModule from "../../assets/JavaModule.webp";
 import sysco from "../../assets/sysco.webp";
 import axios from "axios";
 
 const Module = () => {
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [uploadedFileName, setUploadedFileName] = useState("");
-    const [matchedJDs, setMatchedJDs] = useState([]);
     const [course, setCourse] = useState(null);
     const [contents, setContents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -50,32 +45,6 @@ const Module = () => {
             setError(new Error("Course ID is missing.")); // Set an error state
         }
     }, [courseId]); // Dependency array includes courseId
-
-    const toggleDropdown = () => {
-        setIsDropdownOpen(!isDropdownOpen);
-    };
-
-    const handleFileUpload = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            setIsUploading(true);
-            setUploadedFileName(file.name);
-
-            setTimeout(() => {
-                setIsUploading(false);
-                setIsProcessing(true);
-
-                setTimeout(() => {
-                    setIsProcessing(false);
-                    setMatchedJDs([
-                        "Software Engineer at Sysco Labs",
-                        "Data Scientist at Tech Corp",
-                        "Machine Learning Engineer at AI Solutions",
-                    ]);
-                }, 5000);
-            }, 3000);
-        }
-    };
 
 
     const handleClick = (event, contentId) => {
@@ -176,7 +145,10 @@ const Module = () => {
 
                     <div>
                         <h2 className="text-xl font-bold text-gray-800 mb-4 mt-10">Exam</h2>
-                        <div className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm">
+                        <div
+                            onClick={() => navigate('/ExamRules')} // Add onClick to navigate to /ExamRules
+                            className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer" // Added cursor-pointer for better UX
+                        >
                             <div className="flex items-center">
                                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
                                     <span className="text-blue-800 font-semibold"></span>
@@ -207,71 +179,19 @@ const Module = () => {
                     <div>
                         <h2 className="text-xl font-bold text-gray-800 mb-4 mt-10">Apply For Job</h2>
                         <div
-                            className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer"
-                            onClick={toggleDropdown}
+                            onClick={() => navigate('/JobApplicationPortal')} // Add onClick to navigate to /JobApplicationPortal
+                            className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer" // Added cursor-pointer for better UX
                         >
                             <div className="flex items-center">
                                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                                    {isDropdownOpen ? (
-                                        <FaCaretDown className="text-blue-800 text-xl" />
-                                    ) : (
-                                        <FaLock className="text-blue-800 text-xl" />
-                                    )}
+                                    <FaLock className="text-blue-800 text-xl" />
                                 </div>
                                 <div>
                                     <h3 className="text-sm text-gray-800">CV</h3>
                                 </div>
                             </div>
-                            {isDropdownOpen ? (
-                                <FaCaretDown className="text-blue-500 mr-10" />
-                            ) : (
-                                <FaLock className="text-blue-500 mr-10" />
-                            )}
+                            <span><FaLock className="text-blue-500 mr-10" /></span>
                         </div>
-
-                        {isDropdownOpen && (
-                            <div className="mt-4 p-4 bg-gray-50 rounded-lg shadow-sm">
-                                <input
-                                    type="file"
-                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                    accept=".pdf,.doc,.docx"
-                                    onChange={handleFileUpload}
-                                />
-                                <p className="text-sm text-gray-500 mt-2">Supported formats: PDF, DOC, DOCX</p>
-
-                                {isUploading && (
-                                    <div className="mt-4 flex items-center justify-center">
-                                        <FaSpinner className="animate-spin text-blue-500 mr-2" />
-                                        <p className="text-sm text-gray-600">Uploading {uploadedFileName}...</p>
-                                    </div>
-                                )}
-
-                                {!isUploading && uploadedFileName && !isProcessing && !matchedJDs.length && (
-                                    <div className="mt-4 flex items-center justify-center">
-                                        <p className="text-sm text-green-600">Uploaded {uploadedFileName} successfully!</p>
-                                    </div>
-                                )}
-
-                                {isProcessing && (
-                                    <div className="mt-4 flex flex-col items-center justify-center">
-                                        <FaSpinner className="animate-spin text-blue-500 text-2xl mb-2" />
-                                        <p className="text-lg text-gray-600">Processing Your CV and matching with JDs...</p>
-                                    </div>
-                                )}
-
-                                {/* Matched JDs Output */}
-                                {!isProcessing && matchedJDs.length > 0 && (
-                                    <div className="mt-4">
-                                        <h3 className="text-lg font-semibold text-gray-800 mb-2">Matched Job Descriptions:</h3>
-                                        <ul className="list-disc list-inside">
-                                            {matchedJDs.map((jd, index) => (
-                                                <li key={index} className="text-sm text-gray-600">{jd}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                            </div>
-                        )}
                     </div>
                 </section>
             </main>
