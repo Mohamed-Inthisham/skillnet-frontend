@@ -1,191 +1,191 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
+import InputField from "../InputField"; // You might not need InputField, keeping it for consistency if you use it elsewhere
+import Button from "../Button";
+import { useNavigate } from "react-router-dom"; // useNavigate might be useful for redirection later
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+import * as jwtDecodeModule from "jwt-decode"; // Namespace import for jwt-decode (keeping this as it seemed to fix import issues)
+
 
 const CompanyAddFluencyTest = () => {
-  const [questions, setQuestions] = useState([
-    { id: 1, text: "", duration: "", expanded: false },
-    { id: 2, text: "", duration: "", expanded: false },
-    { id: 3, text: "Introduce your self taking 3 minutes", duration: "3 minutes", expanded: true }
-  ]);
-  const [currentQuestion, setCurrentQuestion] = useState("");
-  const [currentDuration, setCurrentDuration] = useState("");
-  const [testName, setTestName] = useState("");
+  const [formData, setFormData] = useState({
+    courseName: '', // Use courseName to match Quizzes component dropdown
+    oral_question: '', // Keep oral_question for fluency test question
+  });
+  const [courses, setCourses] = useState([]);
+  const [loginError, setLoginError] = useState(""); // For error messages, like in Quizzes component
+  const navigate = useNavigate(); // If you need navigation
 
-  const handleAddQuestion = () => {
-    if (currentQuestion.trim() === "") return;
-    
-    const newQuestion = {
-      id: questions.length + 1,
-      text: currentQuestion,
-      duration: currentDuration || "3 minutes",
-      expanded: false
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const token = getAccessTokenFromDecoding(); // Using your token decoding function
+        if (!token) {
+          console.error("No JWT token found. User not logged in.");
+          return;
+        }
+        const decodedToken = jwtDecodeModule.jwtDecode(token); // Use jwtDecodeModule.jwtDecode here
+        const companyName = decodedToken.company_name; // Extract company name from token
+        const response = await axios.get(`http://localhost:5001/companies/${companyName}/courses`, { // Fetch courses using axios
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        console.log("API Response from /courses:", response); // <----- ADD THIS LOG
+        console.log("API Response Data (courses):", response.data); // <----- ADD THIS LOG
+
+        setCourses(response.data);
+        console.log("Courses State after setCourses:", courses); // <----- ADD THIS LOG
+
+
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
     };
-    
-    setQuestions([...questions, newQuestion]);
-    setCurrentQuestion("");
-    setCurrentDuration("");
+
+    fetchCourses();
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
   };
 
-  const handleExpandQuestion = (id) => {
-    setQuestions(
-      questions.map(q => ({
-        ...q,
-        expanded: q.id === id ? !q.expanded : false
-      }))
-    );
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoginError("");
+
+    if (!formData.courseName) {
+      alert("Please choose a course."); // Basic validation
+      return;
+    }
+
+    const selectedCourse = courses.find(course => course.course_name === formData.courseName);
+    if (!selectedCourse) {
+      alert("Please select a valid Course."); // More specific validation if course not found
+      return;
+    }
+
+    const fluencyTestData = { // Construct fluency test data object
+      oral_question: formData.oral_question, // Get question from formData
+      segments: [], // Include segments: [] as you had before, or remove if not needed
+    };
+
+    console.log("Sending fluency test data:", fluencyTestData); // Debug log
+    console.log("Current formData before submit:", formData); // Debug log
+
+
+    try {
+      const token = getAccessTokenFromDecoding(); // Get token using your function
+      if (!token) {
+        console.error("No JWT token found. User not logged in.");
+        return;
+      }
+
+      const response = await axios.post( // Use axios for POST request
+        `http://localhost:5001/courses/${selectedCourse._id}/fluency_tests`, // API endpoint
+        fluencyTestData, // Data to send
+        { headers: { Authorization: `Bearer ${token}` } } // Headers including token
+      );
+
+      console.log("Fluency test created successfully:", response.data);
+      alert("Fluency test added successfully!");
+      handleDiscard(); // Clear form after success
+    } catch (error) {
+      console.error("Error creating fluency test:", error);
+      setLoginError("Failed to add fluency test question."); // Set error message
+      if (error.response && error.response.data && error.response.data.msg) {
+        setLoginError(error.response.data.msg); // More specific error from backend if available
+      }
+    }
   };
 
-  const handleRemoveQuestion = (id) => {
-    setQuestions(questions.filter(q => q.id !== id));
-  };
-
-  const handleEditQuestion = (id, text, duration) => {
-    setQuestions(
-      questions.map(q => 
-        q.id === id ? { ...q, text, duration } : q
-      )
-    );
-  };
-
-  const handleSaveTest = () => {
-    // Save logic would go here
-    console.log("Saving test:", { name: testName, questions });
-    // Redirect or show success message
-  };
 
   const handleDiscard = () => {
-    // Reset form or redirect
-    setQuestions([
-      { id: 1, text: "", duration: "", expanded: false },
-      { id: 2, text: "", duration: "", expanded: false },
-      { id: 3, text: "Introduce your self taking 3 minutes", duration: "3 minutes", expanded: true }
-    ]);
-    setCurrentQuestion("");
-    setCurrentDuration("");
-    setTestName("");
+    setFormData({
+      courseName: '',
+      oral_question: '',
+    });
   };
 
+  const getAccessTokenFromDecoding = () => { // Your token decoding function - keep it
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      console.warn("accessToken not found in localStorage");
+      return null;
+    }
+    try {
+      // ** TRY THIS: Access jwtDecode as a property of the namespace object **
+      const decodedToken = jwtDecodeModule.jwtDecode(accessToken); // <---- TRY THIS - jwtDecodeModule.jwtDecode
+      console.log("Decoded Access Token:", decodedToken);
+      return accessToken;
+    } catch (error) {
+      console.error("Error decoding accessToken:", error);
+      return null;
+    }
+  };
+
+
   return (
-    <>
-      <div className="p-4">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h1 className="text-xl font-bold mb-6">Add Fluency Tests</h1>
-          
-          {/* Test Name Input */}
-          {/* <div className="mb-6">
-            <label className="block text-gray-700 mb-2">Test Name</label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded-md"
-              placeholder="Enter test name"
-              value={testName}
-              onChange={(e) => setTestName(e.target.value)}
-            />
-          </div> */}
-          
-          {/* Questions Section */}
+    <div className="p-6 max-w-4xl mx-auto font-[Poppins]"> {/* Added font-Poppins class like in Quizzes */}
+      <h2 className="text-2xl font-semibold mb-6">Add Fluency Tests</h2>
+
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h3 className="text-xl mb-4">Add Fluency Questions</h3>
+
+        <form onSubmit={handleSubmit}>
+          {loginError && <p className="text-red-500 text-sm mb-2">{loginError}</p>} {/* Error message display */}
           <div className="mb-6">
-            <h2 className="text-lg font-bold mb-4">Questions</h2>
-            
-            {/* Add New Question */}
-            <div className="mb-4">
-              <div className="mb-2">
-                <label className="block text-gray-700">Question*</label>
-                <textarea
-                  className="w-full p-2 border rounded-md"
-                  placeholder="Write your answer"
-                  value={currentQuestion}
-                  onChange={(e) => setCurrentQuestion(e.target.value)}
-                  rows={3}
-                />
-              </div>
-              
-              <div className="mb-2">
-                <label className="block text-gray-700">Duration (minutes)</label>
-                <input
-                  type="text"
-                  className="w-full p-2 border rounded-md"
-                  placeholder="3 minutes"
-                  value={currentDuration}
-                  onChange={(e) => setCurrentDuration(e.target.value)}
-                />
-              </div>
-              
-              <button
-                className="bg-blue-500 text-white px-4 py-2 rounded-md"
-                onClick={handleAddQuestion}
-              >
-                Save
-              </button>
-            </div>
-            
-            {/* Question List */}
-            <div>
-              <h2 className="text-lg font-bold mb-2">Question List</h2>
-              
-              {questions.map((question, index) => (
-                <div key={question.id} className="border rounded-md mb-2">
-                  <div 
-                    className="p-3 flex justify-between items-center cursor-pointer"
-                    onClick={() => handleExpandQuestion(question.id)}
-                  >
-                    <div>Question {index + 1}</div>
-                    <div className="flex">
-                      <span className={`transform transition-transform ${question.expanded ? 'rotate-180' : ''}`}>
-                        ▼
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {question.expanded && (
-                    <div className="p-3 border-t">
-                      <div>{question.text}</div>
-                      {question.duration && <div className="text-sm text-gray-500">{question.duration}</div>}
-                      <div className="mt-2 flex justify-end">
-                        <button 
-                          className="text-blue-500 rounded-full p-1 mx-1"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCurrentQuestion(question.text);
-                            setCurrentDuration(question.duration);
-                          }}
-                        >
-                          <span className="text-blue-500">✏️</span>
-                        </button>
-                        <button 
-                          className="text-red-500 rounded-full p-1 mx-1"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveQuestion(question.id);
-                          }}
-                        >
-                          <span className="text-red-500">🗑️</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Course Name*
+            </label>
+            <select
+              name="courseName" // Changed name to courseName to match formData
+              value={formData.courseName} // Bind value to formData.courseName
+              onChange={handleChange} // Use handleChange for select changes
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select One</option>
+              {courses.map(course => (
+                <option key={course._id} value={course.course_name}>{course.course_name}</option>
               ))}
-            </div>
+            </select>
           </div>
-          
-          {/* Action Buttons */}
-          <div className="flex justify-between mt-8">
-            <button
-              className="bg-white text-red-500 border border-red-500 px-6 py-2 rounded-md"
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Question*
+            </label>
+            <textarea
+              name="oral_question" // Changed name to oral_question to match formData and backend (if it expects this)
+              value={formData.oral_question} // Bind value to formData.oral_question
+              onChange={handleChange} // Use handleChange for textarea changes
+              placeholder="Write your fluency question"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows="3"
+            />
+          </div>
+
+
+          <div className="flex justify-end space-x-4">
+            <Button
+              text="Discard"
+              variant="outline"
+              className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white"
               onClick={handleDiscard}
-            >
-              Discard
-            </button>
-            <button
-              className="bg-blue-500 text-white px-6 py-2 rounded-md"
-              onClick={handleSaveTest}
-            >
-              Public
-            </button>
+            />
+            <Button
+              text="Save"
+              className="bg-blue-600 hover:bg-blue-700 cursor-pointer"
+              onClick={handleSubmit} // Keep handleSubmit for button click
+            />
           </div>
-        </div>
+        </form>
       </div>
-    </>
+    </div>
   );
 };
 

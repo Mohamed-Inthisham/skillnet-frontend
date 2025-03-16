@@ -6,6 +6,7 @@ import Footer from "../../layout/Footer";
 import CourseCard from "../../components/Home/CourseCard";
 import courseImage from "../../assets/ai.webp";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode"; // Import jwt-decode
 
 const MyLearningsPage = () => {
     const navigate = useNavigate();
@@ -13,6 +14,28 @@ const MyLearningsPage = () => {
     const [enrolledCourses, setEnrolledCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // Function to get logged-in user ID from JWT (using 'sub' claim)
+    const getLoggedInUserId = () => {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+            console.warn("No token found in localStorage (accessToken)");
+            return null;
+        }
+        try {
+            const decodedToken = jwtDecode(token);
+            // **Use 'sub' claim as user ID**
+            const userId = decodedToken.sub;
+            if (!userId) {
+                console.warn("User ID (sub) not found in JWT payload"); // Updated warning
+                return null;
+            }
+            return userId;
+        } catch (error) {
+            console.error("Error decoding JWT:", error);
+            return null;
+        }
+    };
 
     useEffect(() => {
         const fetchEnrolledCourses = async () => {
@@ -56,7 +79,13 @@ const MyLearningsPage = () => {
     }, []);
 
     const handleCourseClick = (courseId) => {
-        navigate(`/module/${courseId}`); // Navigate to specific module page with courseId
+        const userId = getLoggedInUserId(); // Get userId here
+        if (userId) {
+            navigate(`/module/${courseId}`, { state: { userId: userId, courseId: courseId } }); // Pass userId and courseId in state
+        } else {
+            console.warn("User ID not available, cannot navigate to module page.");
+            // Optionally handle case where userId is not available (e.g., redirect to login)
+        }
     };
 
     if (loading) {
@@ -116,7 +145,7 @@ const MyLearningsPage = () => {
                                 isMyLearningsPage={true}
                                 course_image={`http://localhost:5001${course.course_image}` || courseImage}
                                 company_image={`http://localhost:5001${course.company_image}` || courseImage}
-                                onViewCourse={handleCourseClick} // Pass handleCourseClick as onViewCourse
+                                onViewCourse={() => handleCourseClick(course._id)} // Pass course._id to handleCourseClick
                             />
                         </div>
                     ))
