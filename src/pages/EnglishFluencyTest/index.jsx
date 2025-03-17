@@ -23,6 +23,7 @@ const EnglishFluencyTest = () => {
   const [uploadedFileName, setUploadedFileName] = useState(null);
   const [uploadError, setUploadError] = useState(null);
   const [apiResponse, setApiResponse] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false); // State for loading animation
 
   const userId = location.state?.userId;
   const courseId = location.state?.courseId;
@@ -124,9 +125,11 @@ const EnglishFluencyTest = () => {
   const handleSubmit = async () => {
     setUploadError(null);
     setApiResponse(null);
+    setIsAnalyzing(true); // Set analyzing to true when submit is clicked
 
     if (!fileInputRef.current.files || fileInputRef.current.files.length === 0) {
       setUploadError("Please upload an audio file to submit.");
+      setIsAnalyzing(false); // Turn off analyzing if no file
       return;
     }
 
@@ -147,10 +150,12 @@ const EnglishFluencyTest = () => {
       const responseData = await response.json();
       console.log("File upload response:", responseData);
       setApiResponse(responseData);
+      setIsAnalyzing(false); // Turn off analyzing when API call is successful
       // REMOVED setIsModalOpen and setModalCountdown
     } catch (error) {
       console.error("Error uploading file:", error);
       setUploadError("Failed to upload audio file. Please try again.");
+      setIsAnalyzing(false); // Turn off analyzing when API call fails
     }
   };
 
@@ -203,6 +208,7 @@ const EnglishFluencyTest = () => {
               text="Submit"
               className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 cursor-pointer"
               onClick={handleSubmit}
+              disabled={isAnalyzing} // Disable submit button while analyzing
             />
              {/* REMOVED NEXT BUTTON */}
           </div>
@@ -246,13 +252,20 @@ const EnglishFluencyTest = () => {
             )}
           </div>
 
-          {apiResponse && (
-            <div className="mt-6 w-full max-w-3xl p-6 border border-green-300 rounded-lg shadow-lg">
-              <h2 className="text-lg font-medium mb-4 text-center">Test Results</h2>
-              <pre className="text-sm text-gray-700 overflow-x-auto">
-                {JSON.stringify(apiResponse, null, 2)}
-              </pre>
+          {/* Conditional rendering for "Analyzing..." message or "Test Results" */}
+          {isAnalyzing ? (
+            <div className="mt-6 w-full max-w-3xl p-6 border border-yellow-300 rounded-lg shadow-lg text-center">
+              <p className="text-lg font-medium text-yellow-700">Analyzing, please wait...</p>
             </div>
+          ) : (
+            apiResponse && (
+              <div className="mt-6 w-full max-w-3xl p-6 border border-green-300 rounded-lg shadow-lg">
+                <h2 className="text-lg font-medium mb-4 text-center">Test Results</h2>
+                <pre className="text-sm text-gray-700 overflow-x-auto">
+                  {JSON.stringify(apiResponse, null, 2)}
+                </pre>
+              </div>
+            )
           )}
         </div>
       </div>
