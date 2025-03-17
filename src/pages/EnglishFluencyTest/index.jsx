@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Dialog, Transition } from "@headlessui/react"; // Keep imports, might add back later
-import { CheckCircleIcon } from "@heroicons/react/24/outline"; // Keep imports, might add back later
+import { Dialog, Transition } from "@headlessui/react";
+import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useNavigate, useLocation } from "react-router-dom";
 import ExamMonitorLayout from "../../layout/ExamMonitor";
 import Button from "../../components/Button";
@@ -11,8 +11,8 @@ const EnglishFluencyTest = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState(null);
   const [timeLeft, setTimeLeft] = useState(60);
-  const [isModalOpen, setIsModalOpen] = useState(false); // Keep state, might add back modal later
-  const [modalCountdown, setModalCountdown] = useState(5); // Keep state, might add back modal later
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalCountdown, setModalCountdown] = useState(5);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const timerRef = useRef(null);
@@ -68,7 +68,28 @@ const EnglishFluencyTest = () => {
     fetchFluencyTestQuestionByCourseId();
   }, [courseId]);
 
-  // REMOVED useEffect for modalCountdown
+  useEffect(() => {
+    let modalTimer;
+    if (isModalOpen) {
+      modalTimer = setInterval(() => {
+        setModalCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(modalTimer);
+            setIsModalOpen(false);
+            navigate("/EssayQuestions", {
+              state: { userId, courseId, studentEmail },
+            });
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      clearInterval(modalTimer);
+    };
+  }, [isModalOpen, navigate, userId, courseId, studentEmail]);
 
   const startRecording = async () => {
     try {
@@ -162,8 +183,8 @@ const EnglishFluencyTest = () => {
   };
 
   const handleNext = () => {
-    setIsModalOpen(true); //Open the modal
-    setModalCountdown(5); // Initialize the modal counter
+    setIsModalOpen(true);
+    setModalCountdown(5);
   };
 
   const fileInputRef = useRef(null);
@@ -171,8 +192,6 @@ const EnglishFluencyTest = () => {
   const handleClick = () => {
     fileInputRef.current.click();
   };
-
-  // REMOVED openModalAndNavigate and closeModal functions
 
   return (
     <ExamMonitorLayout>
