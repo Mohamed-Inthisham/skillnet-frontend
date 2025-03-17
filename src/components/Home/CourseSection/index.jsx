@@ -72,7 +72,7 @@ const CourseSection = () => {
       <h2 className="text-xl font-medium mb-6 text-center">
         Courses and Professional Certificates
       </h2>
-      <div className="grid grid-cols-3 gap-4 relative"> {/* Add relative here */}
+      <div className="grid grid-cols-3 gap-4 relative"> 
         {courses.map((course, index) => (
           <div
             key={index}
@@ -107,8 +107,7 @@ const CourseSection = () => {
           </div>
         ))}
 
-        {/* Absolutely positioned button */}
-        <div className="absolute -bottom-15 right-0 mt-6"> {/* Positioning */}
+        <div className="absolute -bottom-15 right-0 mt-6"> 
           <Link to="/Programs">
             <Button
               text="View All"
