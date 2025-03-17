@@ -29,6 +29,7 @@ const ModuleContent = () => {
             try {
                 const response = await axios.get(`http://localhost:5001/contents/${contentId}`);
                 setContent(response.data);
+                console.log("Fetched Content Data:", response.data); // Debugging line
                 setLoadingContent(false);
             } catch (err) {
                 setErrorContent(err);
@@ -151,8 +152,20 @@ const ModuleContent = () => {
         return <div className="flex justify-center items-center min-h-screen">Content not found.</div>;
     }
 
-    const youtubeVideoId = content.link ? content.link.split('v=')[1] : '';
+    const youtubeVideoId = content?.link ? (() => {
+        try {
+            const url = new URL(content.link);
+            const params = new URLSearchParams(url.search);
+            return params.get('v');
+        } catch (e) {
+            console.error("Error parsing URL:", e);
+            return null; // Handle invalid URL
+        }
+    })() : '';
+    console.log("Extracted youtubeVideoId:", youtubeVideoId); // Debugging line
     const embedLink = youtubeVideoId ? `https://www.youtube.com/embed/${youtubeVideoId}` : '';
+    console.log("Constructed embedLink:", embedLink); // Debugging line
+
 
     const correctAnswerIndex = mcqData?.correct_answer ? mcqData.correct_answer.charCodeAt(0) - 'A'.charCodeAt(0) : -1;
 
