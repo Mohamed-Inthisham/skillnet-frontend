@@ -4,7 +4,7 @@ import { AlertCircle, Clock, Video, MessageSquare } from 'lucide-react';
 import FaceMonitor from '../../components/FaceMonitor';
 
 const ExamMonitorLayout = ({ children }) => {
-    const [totalTime, setTotalTime] = useState(480); // 8 minutes total (in seconds)
+    const [totalTime, setTotalTime] = useState(1800); // 8 minutes total (in seconds)
     const [warnings, setWarnings] = useState([]);
     const [faceStatus, setFaceStatus] = useState('Detecting...');
     const [usernameForMonitoring, setUsernameForMonitoring] = useState("Mohamed Inthisham"); // Example username

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Upload, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { Upload, Loader2, AlertCircle } from 'lucide-react';
 import JobList from '../../components/MatchedJobList';
-import SuccessMessage from '../../components/CvUploadSuccessMessage';
+import UploadSuccessMessage from '../../components/CvUploadSuccessMessage'; // Corrected import path
 import UserHeader from '../../layout/UserHeader';
 
 function App() {
@@ -11,12 +11,13 @@ function App() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [apiResponseData, setApiResponseData] = useState(null);
 
   const handleFileSelect = (event) => {
     const file = event.target.files?.[0];
     if (file) {
       setCvFile(file);
-      setError(null); // Clear any previous errors
+      setError(null);
     }
   };
 
@@ -25,27 +26,41 @@ function App() {
 
     setIsLoading(true);
     setError(null);
+    setApiResponseData(null);
+
+    const formData = new FormData();
+    formData.append('cv', cvFile);
 
     try {
-      // Simulate API call to process CV with anomaly detection
-      const response = await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          // Simulate random anomaly detection (30% chance of anomaly)
-          const isAnomaly = Math.random() < 0.3;
-          if (isAnomaly) {
-            reject(new Error("Anomaly detected in the CV. Please ensure your CV is in the correct format and contains valid information."));
-          } else {
-            resolve({ success: true });
-          }
-        }, 2000);
+      const response = await fetch('http://127.0.0.1:5000/api/document_rag', {
+        method: 'POST',
+        body: formData,
       });
 
-      if (response.success) {
-        setShowJobs(true);
+      if (!response.ok) {
+        const errorData = await response.json();
+        let errorMessage = "Upload failed";
+        if (errorData && errorData.anomaly) {
+          errorMessage = errorData.message || "Anomaly detected in the CV.";
+        } else if (errorData && errorData.detail) {
+          errorMessage = `Upload failed: ${errorData.detail}`;
+        } else if (errorData && errorData.message) {
+          errorMessage = `Upload failed: ${errorData.message}`;
+        } else if (response.statusText) {
+          errorMessage = `Upload failed: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
+
+      const responseData = await response.json();
+      setApiResponseData(responseData);
+      setShowJobs(true);
+      console.log("API Response Data:", responseData);
+
     } catch (err) {
       setError(err.message);
-      setCvFile(null); // Clear the file input
+      setCvFile(null);
+      setShowJobs(false);
     } finally {
       setIsLoading(false);
     }
@@ -64,6 +79,7 @@ function App() {
     setSelectedJobs([]);
     setIsSuccess(false);
     setError(null);
+    setApiResponseData(null);
   };
 
   return (
@@ -115,7 +131,7 @@ function App() {
                       {isLoading ? (
                         <>
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          Processing Your CV...
+                          Analyzing please wait...
                         </>
                       ) : (
                         <>
@@ -136,11 +152,12 @@ function App() {
             selectedJobs={selectedJobs}
             setSelectedJobs={setSelectedJobs}
             onSubmit={handleJobSubmit}
+            apiResponseData={apiResponseData}
           />
         )}
 
         {isSuccess && (
-          <SuccessMessage
+          <UploadSuccessMessage
             selectedJobCount={selectedJobs.length}
             onReset={handleReset}
           />
