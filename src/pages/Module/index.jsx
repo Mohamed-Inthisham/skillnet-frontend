@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import UserHeader from "../../layout/UserHeader";
 import Footer from "../../layout/Footer";
 import ModuleContentEdiPage from "../../components/ModuleContentEdit"; // Note: Check if this is used
-import { FaLock } from "react-icons/fa";
+import { FaLock,  FaStar, FaRegStar } from "react-icons/fa";
 import javaModule from "../../assets/JavaModule.webp";
 import sysco from "../../assets/sysco.webp";
 import axios from "axios";
@@ -87,6 +87,17 @@ const Module = () => {
                             />
                             <h1 className="text-sm text-gray-800 mb-1">{course.company_name || "Company Name Missing"}</h1>
                         </div>
+                         {course.level && ( // Only display if course.level exists
+                            <p className="text-sm text-gray-700 font-medium flex items-center justify-start md:justify-end">
+                            {/* Optional: Icons based on level */}
+                            {course.level === "Beginner" && <FaRegStar className="mr-1.5 text-yellow-500" />}
+                            {course.level === "Intermediate" && <><FaStar className="mr-0.5 text-yellow-500" /><FaRegStar className="mr-1.5 text-yellow-500" /></>}
+                            {course.level === "Advanced" && <><FaStar className="mr-0.5 text-yellow-500" /><FaStar className="mr-0.5 text-yellow-500" /><FaStar className="mr-1.5 text-yellow-500" /></>}
+                            {/* Fallback dot for other levels or if you don't want icons for all */}
+                            {!["Beginner", "Intermediate", "Advanced"].includes(course.level) && <span className="w-2 h-2 bg-blue-600 rounded-full mr-2"></span>}
+                            {course.level} Level 
+                        </p>
+)}
                     </div>
                     <div className="space-y-1 mb-25 ml-20 mt-10">
                         <p className="text-sm text-gray-600 flex items-center">
@@ -95,16 +106,17 @@ const Module = () => {
                         </p>
                         <p className="text-sm text-gray-600 flex items-center">
                             <span className="w-2 h-2 bg-gray-600 rounded-full mr-2"></span>
-                            10 Quizzes
+                            {contents.length} Quizzes
                         </p>
                         <p className="text-sm text-gray-600 flex items-center">
                             <span className="w-2 h-2 bg-gray-600 rounded-full mr-2"></span>
-                            1 Hr Exam
+                            1 Hour Exam
                         </p>
-                        <p className="text-sm text-gray-600 flex items-center">
+                        {/* <p className="text-sm text-gray-600 flex items-center">
                             <span className="w-2 h-2 bg-gray-600 rounded-full mr-2"></span>
-                            Professional Certificate
-                        </p>
+                            {course.level} Level
+                        </p> */}
+                       
                     </div>
                 </section>
 
