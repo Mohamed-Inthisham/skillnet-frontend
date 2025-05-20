@@ -56,7 +56,7 @@ const CompanyCourses = () => {
   }, []);
 
   const handleRowClick = (courseId) => {
-    navigate(`/CompanyModule`); //navigate(`/CompanyModulePage/${courseId}`);
+    navigate(`/Companymodule/${courseId}`); //navigate(`/CompanyModulePage/${courseId}`);   navigate(`/CompanyModule`);
   };
 
   const handleButtonClick = (e, courseId, action) => {
