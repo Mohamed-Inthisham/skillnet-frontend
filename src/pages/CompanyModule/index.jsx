@@ -406,20 +406,25 @@
 //------------------------------------------------------------------------------------
 
 
+// src/pages/CompanyModulePage.jsx
+
+// src/pages/CompanyModulePage.jsx
+
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import UserHeader from "../../layout/UserHeader";
 import Footer from "../../layout/Footer";
 import { FaLock, FaCaretDown, FaSpinner, FaEdit, FaTrash, FaUpload, FaSave, FaTimes, FaPlus,  FaStar, FaRegStar } from "react-icons/fa";
-import javaModule from "../../assets/JavaModule.webp"; // Default/fallback image
-import sysco from "../../assets/sysco.webp"; // Default/fallback company image
-import ModuleContentEditForm from "../../components/ModuleContentEditForm";
-import AddNewLessonForm from "../../components/AddNewLessonForm";
+import javaModule from "../../assets/JavaModule.webp";
+import sysco from "../../assets/sysco.webp";
+import ModuleContentEditForm from "../../components/ModuleContentEditForm"; // For editing lesson details
+import AddNewLessonForm from "../../components/AddNewLessonForm"; // For adding new lessons entirely
 import CompanyEnglishFluencyTest from "../../components/CompanyEnglishFluencyTest";
+import McqForm from "../../components/McqForm"; // For adding/editing MCQs for a lesson
 import axios from "axios";
 import { toast } from "react-toastify";
 
-// VideoPlayer component
+// VideoPlayer component (remains the same)
 const VideoPlayer = ({ videoLink }) => {
   const getEmbedUrl = (url) => {
     if (!url || typeof url !== 'string') return null;
@@ -445,7 +450,7 @@ const VideoPlayer = ({ videoLink }) => {
       return null;
     }
     if (/\.(mp4|webm|ogg)$/i.test(url)) return url;
-    return null; 
+    return null;
   };
   const embedUrl = getEmbedUrl(videoLink);
   if (!videoLink) return <p className="text-sm text-gray-500 p-4 text-center">No video link.</p>;
@@ -460,8 +465,8 @@ const CompanyModulePage = () => {
   const [contents, setContents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  const [isEditingCourseDetails, setIsEditingCourseDetails] = useState(false); 
+
+  const [isEditingCourseDetails, setIsEditingCourseDetails] = useState(false);
   const [tempCourseData, setTempCourseData] = useState({});
   const [isSavingCourse, setIsSavingCourse] = useState(false);
 
@@ -469,36 +474,46 @@ const CompanyModulePage = () => {
   const [courseImageFile, setCourseImageFile] = useState(null);
   const imageInputRef = useRef(null);
 
-  // Lesson content states
-  const [editingContentId, setEditingContentId] = useState(null); // ID of the lesson content being edited
-  const [showAddLessonForm, setShowAddLessonForm] = useState(false);
-  const [isSavingNewLesson, setIsSavingNewLesson] = useState(false); // For add new lesson save button
+  const [editingLessonContentId, setEditingLessonContentId] = useState(null); // ID of lesson content being edited (ModuleContentEditForm)
+  const [showAddLessonForm, setShowAddLessonForm] = useState(false); // For the main "Add Lesson" form
+  const [isSavingNewLesson, setIsSavingNewLesson] = useState(false);
 
-  // Other states
-  const [openLessonIndex, setOpenLessonIndex] = useState(null);
+  const [openLessonIndex, setOpenLessonIndex] = useState(null); // Which accordion is open
   const [isExamDropdownOpen, setIsExamDropdownOpen] = useState(false);
   const [isFluencyTestOpen, setIsFluencyTestOpen] = useState(false);
-  
+
   const { courseId } = useParams();
   const navigate = useNavigate();
 
-  // Combined fetch function
+  // MCQ States
+  const [contentMcqs, setContentMcqs] = useState(new Map()); // Map<contentId, { data: [], isLoading: boolean, error: null }>
+  const [activeMcqFormForContentId, setActiveMcqFormForContentId] = useState(null); // contentId for which McqForm is displayed IN THE ACCORDION
+  const [editingMcqData, setEditingMcqData] = useState(null); // Data for the MCQ being edited (passed to McqForm)
+  const [isSavingMcq, setIsSavingMcq] = useState(false);
+
   const fetchCourseDataAndContents = async (showLoading = true) => {
     if(showLoading) setLoading(true);
     setError(null);
     try {
       const token = localStorage.getItem("accessToken");
       const headers = { Authorization: `Bearer ${token}` };
-      
+
       const coursePromise = axios.get(`http://localhost:5001/courses/${courseId}`, { headers });
       const contentsPromise = axios.get(`http://localhost:5001/courses/${courseId}/contents`, { headers });
 
       const [courseResponse, contentsResponse] = await Promise.all([coursePromise, contentsPromise]);
-      
+
       setCourse(courseResponse.data);
       setCourseImagePreview(courseResponse.data.course_image ? `http://localhost:5001${courseResponse.data.course_image}` : javaModule);
       setContents(contentsResponse.data);
       
+      // Reset states that depend on contents
+      setContentMcqs(new Map());
+      setActiveMcqFormForContentId(null);
+      setEditingMcqData(null);
+      setEditingLessonContentId(null); // Also reset lesson editing state
+
+
       if(showLoading) setLoading(false);
     } catch (err) {
       setError(err);
@@ -506,28 +521,29 @@ const CompanyModulePage = () => {
       toast.error(err.response?.data?.msg || "Failed to load course data.");
     }
   };
-  
+
   useEffect(() => {
     if (courseId) {
       fetchCourseDataAndContents();
     }
   }, [courseId]);
 
-  // --- Course Details Edit Handlers ---
   const handleEditCourseDetails = () => {
     setIsEditingCourseDetails(true);
-    // Hide lesson forms if they are open
+    // Close all other inline forms/views
     setShowAddLessonForm(false);
-    setEditingContentId(null);
+    setEditingLessonContentId(null);
     setOpenLessonIndex(null);
+    setActiveMcqFormForContentId(null);
+    setEditingMcqData(null);
 
     setTempCourseData({
       course_name: course.course_name,
       introduction: course.introduction,
-      level: course.level || "", 
+      level: course.level || "",
       course_image_url: course.course_image,
     });
-    setCourseImageFile(null); 
+    setCourseImageFile(null);
     setCourseImagePreview(course.course_image ? `http://localhost:5001${course.course_image}` : javaModule);
     if(imageInputRef.current) imageInputRef.current.value = "";
   };
@@ -535,7 +551,7 @@ const CompanyModulePage = () => {
   const handleCourseFieldChange = (field, value) => {
     setCourse(prevCourse => ({ ...prevCourse, [field]: value }));
   };
-  
+
   const handleImageFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -565,7 +581,7 @@ const CompanyModulePage = () => {
       });
       toast.success("Course updated successfully!");
       setIsEditingCourseDetails(false);
-      await fetchCourseDataAndContents(false); // Re-fetch without full page load
+      await fetchCourseDataAndContents(false);
       setCourseImageFile(null);
     } catch (error) {
       toast.error(error.response?.data?.msg || "Failed to update course.");
@@ -586,69 +602,87 @@ const CompanyModulePage = () => {
     setIsEditingCourseDetails(false);
   };
 
-  // --- Lesson Content Handlers ---
   const toggleDropdown = (index) => {
-    if (isEditingCourseDetails) return; // Don't interact with lessons while editing course details
-    setOpenLessonIndex(openLessonIndex === index ? null : index);
-  };
-
-  const handleEditLessonContent = (contentItem, index) => {
     if (isEditingCourseDetails) return;
-    setEditingContentId(contentItem._id);
-    setShowAddLessonForm(false); // Ensure add form is hidden
-    setOpenLessonIndex(index); // Open the accordion for this lesson
+
+    const contentId = contents[index]._id;
+    const isCurrentlyOpen = openLessonIndex === index;
+
+    if (isCurrentlyOpen) {
+      setOpenLessonIndex(null);
+      // If closing the accordion, also close any inline forms for THIS lesson
+      if (editingLessonContentId === contentId) setEditingLessonContentId(null);
+      if (activeMcqFormForContentId === contentId) setActiveMcqFormForContentId(null);
+      setEditingMcqData(null); // Clear editing MCQ data regardless
+    } else {
+      setOpenLessonIndex(index);
+      // If opening a new accordion, close forms from OTHER lessons
+      if (editingLessonContentId && editingLessonContentId !== contentId) setEditingLessonContentId(null);
+      if (activeMcqFormForContentId && activeMcqFormForContentId !== contentId) setActiveMcqFormForContentId(null);
+      setEditingMcqData(null); // Clear editing MCQ data
+
+      const mcqState = contentMcqs.get(contentId);
+      if (!mcqState || mcqState.data === undefined) {
+        fetchMcqsForContent(contentId);
+      }
+    }
   };
 
-  const handleCancelEditLessonContent = () => {
-    setEditingContentId(null);
-    // Optionally close the accordion: setOpenLessonIndex(null);
-  };
 
-  const handleSaveLessonContent = async (contentId, updatedData) => {
+  const handleEditLessonDetails = (contentItem, index) => { // Renamed for clarity
     if (isEditingCourseDetails) return;
-    // Add a loading state for this specific save if desired, e.g., setIsSavingLesson(true)
+    setEditingLessonContentId(contentItem._id); // Show ModuleContentEditForm
+    setActiveMcqFormForContentId(null);    // Hide McqForm
+    setEditingMcqData(null);
+    setShowAddLessonForm(false);            // Hide main "Add Lesson" form
+    setOpenLessonIndex(index);              // Ensure accordion is open
+  };
+
+  const handleCancelEditLessonDetails = () => { // Renamed for clarity
+    setEditingLessonContentId(null);
+  };
+
+  const handleSaveLessonDetails = async (contentId, updatedData) => { // Renamed for clarity
+    if (isEditingCourseDetails) return;
     try {
       const token = localStorage.getItem("accessToken");
       await axios.put(`http://localhost:5001/contents/${contentId}`, updatedData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Lesson updated successfully!");
-      await fetchCourseDataAndContents(false); // Re-fetch contents
-      setEditingContentId(null); // Exit edit mode for this lesson
+      await fetchCourseDataAndContents(false); // Refreshes and closes forms
+      setEditingLessonContentId(null);
     } catch (error) {
       toast.error(error.response?.data?.msg || "Failed to update lesson.");
     }
-    // setIsSavingLesson(false);
   };
 
   const handleDeleteContent = async (contentId) => {
     if (isEditingCourseDetails) return;
-    if (window.confirm("Are you sure you want to delete this lesson?")) {
+    if (window.confirm("Are you sure you want to delete this lesson? This will also delete any associated MCQs.")) {
       try {
         const token = localStorage.getItem("accessToken");
         await axios.delete(`http://localhost:5001/contents/${contentId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         toast.success("Lesson deleted successfully!");
-        if (editingContentId === contentId) setEditingContentId(null);
-        // Check if the deleted lesson was open and close it
-        const deletedIndex = contents.findIndex(c => c._id === contentId);
-        if (openLessonIndex === deletedIndex) setOpenLessonIndex(null);
-        
-        await fetchCourseDataAndContents(false); // Re-fetch contents
-      } catch (error) {
+        // No need to manually close forms, fetchCourseDataAndContents will reset them
+        await fetchCourseDataAndContents(false);
+      } catch (error)
+ {
         toast.error(error.response?.data?.msg || "Failed to delete lesson.");
       }
     }
   };
-  
-  const handleToggleAddLessonForm = () => {
+
+  const handleToggleAddLessonForm = () => { // This is for the main "Add Lesson" button, not within accordion
     if (isEditingCourseDetails) return;
     setShowAddLessonForm(!showAddLessonForm);
-    setEditingContentId(null); // Ensure edit form is hidden
-    if (!showAddLessonForm) { // If form is about to be shown
-        setOpenLessonIndex(null); // Close any open lesson accordion
-    }
+    // Close any open accordion and its inline forms
+    setOpenLessonIndex(null);
+    setEditingLessonContentId(null);
+    setActiveMcqFormForContentId(null);
+    setEditingMcqData(null);
   };
 
   const handleAddNewLesson = async (newLessonDataArray) => {
@@ -667,7 +701,7 @@ const CompanyModulePage = () => {
         } else {
           toast.success("Lesson(s) added successfully!");
         }
-        await fetchCourseDataAndContents(false); // Re-fetch contents
+        await fetchCourseDataAndContents(false); // Refreshes and closes forms
         setShowAddLessonForm(false);
       } else {
         toast.error(response.data.msg || "Failed to add lesson(s).");
@@ -679,7 +713,85 @@ const CompanyModulePage = () => {
     }
   };
 
-  // --- Other Handlers ---
+  // --- MCQ Handlers ---
+  const fetchMcqsForContent = async (contentId, showSpinner = true) => {
+    setContentMcqs(prev => new Map(prev).set(contentId, { data: prev.get(contentId)?.data || [], isLoading: showSpinner, error: null }));
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(`http://localhost:5001/contents/${contentId}/mcqs`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setContentMcqs(prev => new Map(prev).set(contentId, { data: response.data, isLoading: false, error: null }));
+    } catch (err) {
+      console.error(`Error fetching MCQs for content ${contentId}:`, err);
+      setContentMcqs(prev => new Map(prev).set(contentId, { data: prev.get(contentId)?.data || [], isLoading: false, error: err }));
+    }
+  };
+
+  const showMcqFormForAdd = (contentId) => {
+    setEditingMcqData(null);                // Clear for new MCQ
+    setActiveMcqFormForContentId(contentId); // Show McqForm IN ACCORDION
+    setEditingLessonContentId(null);        // Hide lesson details edit form
+  };
+
+  const showMcqFormForEdit = (mcq, contentId) => {
+    setEditingMcqData(mcq);                 // Populate for editing
+    setActiveMcqFormForContentId(contentId); // Show McqForm IN ACCORDION
+    setEditingLessonContentId(null);        // Hide lesson details edit form
+  };
+
+  const cancelMcqForm = () => {
+    setActiveMcqFormForContentId(null);
+    setEditingMcqData(null);
+  };
+
+  const handleSaveMcq = async (mcqPayload, mcqIdToUpdate, contentIdForNewMcq) => {
+    setIsSavingMcq(true);
+    const token = localStorage.getItem("accessToken");
+    const headers = { Authorization: `Bearer ${token}` };
+    const targetContentId = mcqIdToUpdate ? editingMcqData.content_id : contentIdForNewMcq;
+
+    try {
+      if (mcqIdToUpdate) {
+        await axios.put(`http://localhost:5001/mcqs/${mcqIdToUpdate}`, mcqPayload, { headers });
+        toast.success("MCQ updated successfully!");
+      } else {
+        await axios.post(`http://localhost:5001/contents/${targetContentId}/mcqs`, mcqPayload, { headers });
+        toast.success("MCQ added successfully!");
+      }
+      fetchMcqsForContent(targetContentId, false);
+      cancelMcqForm(); // Close the McqForm from accordion
+    } catch (error) {
+      toast.error(error.response?.data?.msg || "Failed to save MCQ.");
+      console.error("Error saving MCQ:", error);
+    } finally {
+      setIsSavingMcq(false);
+    }
+  };
+
+  const handleDeleteMcq = async (mcqId, contentId) => {
+    if (window.confirm("Are you sure you want to delete this MCQ?")) {
+      setIsSavingMcq(true);
+      const token = localStorage.getItem("accessToken");
+      try {
+        await axios.delete(`http://localhost:5001/mcqs/${mcqId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        toast.success("MCQ deleted successfully!");
+        fetchMcqsForContent(contentId, false);
+        if (editingMcqData && editingMcqData._id === mcqId) {
+            cancelMcqForm(); // Close form if deleted MCQ was being edited
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.msg || "Failed to delete MCQ.");
+        console.error("Error deleting MCQ:", error);
+      } finally {
+        setIsSavingMcq(false);
+      }
+    }
+  };
+
+
   const toggleExamDropdown = () => setIsExamDropdownOpen(!isExamDropdownOpen);
   const toggleFluencyTest = () => setIsFluencyTestOpen(!isFluencyTestOpen);
   const handleDeleteCourseSection = async (section) => {
@@ -689,7 +801,7 @@ const CompanyModulePage = () => {
                   const token = localStorage.getItem("accessToken");
                   await axios.delete(`http://localhost:5001/courses/${courseId}`, { headers: { Authorization: `Bearer ${token}` } });
                   toast.success("Course deleted successfully.");
-                  navigate("/company/dashboard"); // Or to a relevant page
+                  navigate("/company/dashboard");
               } catch (error) {
                   toast.error(error.response?.data?.msg || "Failed to delete course.");
               }
@@ -706,7 +818,7 @@ const CompanyModulePage = () => {
     <div className="bg-gray-50 min-h-screen flex flex-col font-[Poppins]">
       <UserHeader />
       <main className="flex-1 py-10 px-4 sm:px-10 md:px-20 bg-gray-100">
-        {/* Course Header & Details Section */}
+        {/* Course Header & Details Section (same as before) */}
         <section className="mb-10 bg-white p-6 sm:p-8 rounded-lg shadow-xl relative">
           <div className="absolute top-4 right-4 flex space-x-2 z-10">
             {isEditingCourseDetails ? (
@@ -793,10 +905,10 @@ const CompanyModulePage = () => {
         <section className="mb-10 bg-white p-6 sm:p-8 rounded-lg shadow-xl relative">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-gray-800">Lessons</h2>
-            {!isEditingCourseDetails && (
+            {!isEditingCourseDetails && ( // Main "Add Lesson" button
               <button
                 onClick={handleToggleAddLessonForm}
-                disabled={isSavingNewLesson} // Disable while saving new lesson
+                disabled={isSavingNewLesson}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-150 flex items-center disabled:opacity-70"
                 title={showAddLessonForm ? "Cancel Adding Lesson" : "Add New Lesson"}
               >
@@ -806,19 +918,21 @@ const CompanyModulePage = () => {
             )}
           </div>
 
-          {showAddLessonForm && !isEditingCourseDetails && ( // Show add form only if not editing course details
-            <AddNewLessonForm 
-                onSave={handleAddNewLesson} 
+          {showAddLessonForm && !isEditingCourseDetails && ( // Display AddNewLessonForm if active
+            <AddNewLessonForm
+                onSave={handleAddNewLesson}
                 onCancel={handleToggleAddLessonForm}
-                courseId={courseId} 
+                courseId={courseId}
             />
           )}
-          
-          {!showAddLessonForm && !isEditingCourseDetails && ( // Show lessons list only if not adding and not editing course details
+
+          {!showAddLessonForm && !isEditingCourseDetails && ( // Display list of lessons
             <div>
               {contents.length > 0 ? contents.map((content, index) => (
                 <div key={content._id} className="mb-2">
-                  <div className={`flex items-center justify-between p-4 bg-gray-50 shadow-sm ${openLessonIndex === index && editingContentId !== content._id ? 'rounded-t-lg' : 'rounded-lg'}`}>
+                  {/* Lesson Accordion Header */}
+                  <div className={`flex items-center justify-between p-4 bg-gray-50 shadow-sm 
+                                 ${openLessonIndex === index && editingLessonContentId !== content._id && activeMcqFormForContentId !== content._id ? 'rounded-t-lg' : 'rounded-lg'}`}>
                     <div className="flex items-center flex-grow cursor-pointer" onClick={() => toggleDropdown(index)}>
                       <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
                         <span className="text-blue-800 font-semibold">{index + 1}</span>
@@ -826,27 +940,109 @@ const CompanyModulePage = () => {
                       <div><h3 className="text-sm text-gray-800 font-medium">{content.lesson_name}</h3></div>
                     </div>
                     <div className="flex space-x-3 items-center ml-4">
-                      {editingContentId !== content._id && (
-                        <button title="Edit Lesson" className="text-blue-600 hover:text-blue-800 p-1" onClick={(e) => { e.stopPropagation(); handleEditLessonContent(content, index); }}>
+                      {/* Show Edit Lesson button only if no inline form is active for THIS lesson */}
+                      {editingLessonContentId !== content._id && activeMcqFormForContentId !== content._id && (
+                        <button title="Edit Lesson Details" className="text-blue-600 hover:text-blue-800 p-1" onClick={(e) => { e.stopPropagation(); handleEditLessonDetails(content, index); }}>
                           <FaEdit size={16} />
                         </button>
                       )}
-                       {editingContentId === content._id && <span className="p-1 w-[20px]"></span>} {/* Placeholder for layout consistency */}
+                       {/* Placeholder if an inline form is active, to maintain layout */}
+                      {(editingLessonContentId === content._id || activeMcqFormForContentId === content._id) && <span className="p-1 w-[20px]"></span>}
                       <button title="Delete Lesson" className="text-red-500 hover:text-red-700 p-1" onClick={(e) => { e.stopPropagation(); handleDeleteContent(content._id); }}>
                         <FaTrash size={16} />
                       </button>
                       <FaCaretDown title={openLessonIndex === index ? "Collapse" : "Expand"} className={`text-blue-500 transition-transform duration-200 cursor-pointer p-1 ${openLessonIndex === index ? 'transform rotate-180' : ''}`} onClick={(e) => { e.stopPropagation(); toggleDropdown(index); }}/>
                     </div>
                   </div>
+
+                  {/* Accordion Content: Shows Lesson Edit Form OR McqForm OR Video+MCQs */}
                   {openLessonIndex === index && (
-                    editingContentId === content._id ? (
-                      <ModuleContentEditForm content={content} onSave={handleSaveLessonContent} onCancel={handleCancelEditLessonContent}/>
-                    ) : (
-                      <div className="p-4 bg-white rounded-b-lg shadow-inner border-t border-gray-200">
-                        <VideoPlayer videoLink={content.link} />
-                        <p className="text-xs text-gray-600 mt-3"><strong>Original Link:</strong> <a href={content.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">{content.link}</a></p>
-                      </div>
-                    )
+                    <div className="p-4 bg-white rounded-b-lg shadow-inner border-t border-gray-200">
+                      {editingLessonContentId === content._id ? ( // If editing lesson details
+                        <ModuleContentEditForm
+                          content={content}
+                          onSave={handleSaveLessonDetails}
+                          onCancel={handleCancelEditLessonDetails}
+                        />
+                      ) : activeMcqFormForContentId === content._id ? ( // If McqForm is active for this content
+                        <McqForm
+                          contentId={content._id}
+                          initialData={editingMcqData}
+                          onSave={handleSaveMcq}
+                          onCancel={cancelMcqForm}
+                          isSaving={isSavingMcq}
+                        />
+                      ) : ( // Default view: Video and MCQ list
+                        <>
+                          <VideoPlayer videoLink={content.link} />
+                          <p className="text-xs text-gray-600 mt-3"><strong>Original Link:</strong> <a href={content.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">{content.link}</a></p>
+
+                          {/* MCQ Section for this lesson */}
+                          <div className="mt-6 pt-4 border-t border-gray-200">
+                            <div className="flex justify-between items-center mb-3">
+                              <h4 className="text-md font-semibold text-gray-700">Lesson Quiz (MCQ)</h4>
+                                <button
+                                  onClick={() => showMcqFormForAdd(content._id)} // This button now shows McqForm inline
+                                  className="bg-green-500 hover:bg-green-600 text-white text-xs font-semibold py-1 px-2.5 rounded-md shadow-sm flex items-center"
+                                  title="Add MCQ to this lesson"
+                                >
+                                  <FaPlus className="mr-1" size={10} /> Add MCQ
+                                </button>
+                            </div>
+
+                            {/* Display List of MCQs */}
+                            {(() => {
+                                const mcqState = contentMcqs.get(content._id);
+                                if (!mcqState) {
+                                  return <div className="flex justify-center items-center p-3"><FaSpinner className="animate-spin text-blue-500" /> <span className="ml-2 text-sm text-gray-500">Loading quiz...</span></div>;
+                                }
+                                if (mcqState.isLoading && (!mcqState.data || mcqState.data.length === 0)) {
+                                  return <div className="flex justify-center items-center p-3"><FaSpinner className="animate-spin text-blue-500" /> <span className="ml-2 text-sm text-gray-500">Loading quiz...</span></div>;
+                                }
+                                if (mcqState.error) {
+                                  return <p className="text-red-500 text-xs p-2 bg-red-50 rounded">Error: {mcqState.error.response?.data?.msg || mcqState.error.message}</p>;
+                                }
+                                if (mcqState.data && mcqState.data.length > 0) {
+                                  return (
+                                    <div className="space-y-3 mt-2">
+                                      {mcqState.isLoading && <div className="text-xs text-blue-500 flex items-center mb-1"><FaSpinner className="animate-spin mr-1.5" /> Refreshing quiz...</div>}
+                                      {mcqState.data.map((mcq, mcqIndex) => (
+                                        <div key={mcq._id} className="p-3 border border-gray-200 rounded-md bg-gray-50 shadow-sm">
+                                          <div className="flex justify-between items-start mb-1">
+                                            <p className="text-sm font-medium text-gray-800 flex-grow break-words">
+                                              {mcqIndex + 1}. {mcq.question_text}
+                                            </p>
+                                            <div className="flex-shrink-0 flex space-x-2 ml-2">
+                                              <button onClick={() => showMcqFormForEdit(mcq, content._id)} title="Edit MCQ" className="text-blue-600 hover:text-blue-700 p-0.5">
+                                                <FaEdit size={14} />
+                                              </button>
+                                              <button onClick={() => handleDeleteMcq(mcq._id, content._id)} title="Delete MCQ" className="text-red-500 hover:text-red-600 p-0.5">
+                                                <FaTrash size={14} />
+                                              </button>
+                                            </div>
+                                          </div>
+                                          <ul className="list-none mt-1.5 space-y-1 pl-4">
+                                            {mcq.options.map((option, optIndex) => (
+                                              <li key={optIndex} className={`text-xs text-gray-600 ${String.fromCharCode(65 + optIndex) === mcq.correct_answer ? 'font-semibold text-green-700' : ''}`}>
+                                                {String.fromCharCode(65 + optIndex)}. {option}
+                                                {String.fromCharCode(65 + optIndex) === mcq.correct_answer && <span className="ml-1 text-green-600">(Correct)</span>}
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  );
+                                }
+                                if (mcqState.data && mcqState.data.length === 0) {
+                                  return <p className="text-sm text-gray-500 italic mt-2">No MCQs added to this lesson yet.</p>;
+                                }
+                                return null;
+                              })()}
+                          </div> {/* End MCQ Section for this lesson */}
+                        </>
+                      )}
+                    </div>
                   )}
                 </div>
               )) : <p className="text-gray-500 mt-4">No lessons yet. Click "Add Lesson" to start.</p>}
@@ -855,7 +1051,7 @@ const CompanyModulePage = () => {
           {isEditingCourseDetails && <p className="text-sm text-gray-500 italic text-center mt-4">Finish editing course details to manage lessons.</p>}
         </section>
 
-        {/* Other sections ... */}
+        {/* Other sections (Exam, Certificate, etc. - same as before) */}
          <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative">
            <h2 className="text-xl font-bold text-gray-800 mb-4">Exam</h2>
            <div className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer" onClick={toggleExamDropdown}>
