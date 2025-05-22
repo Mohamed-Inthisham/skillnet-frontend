@@ -1,19 +1,21 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import { CheckCircleIcon } from "@heroicons/react/24/outline"; // Assuming you might want a spinner later
 import { useNavigate, useLocation } from "react-router-dom";
 import ExamMonitorLayout from "../../layout/ExamMonitor";
 import Button from "../../components/Button";
-import plus from "../../assets/plus.webp";
+// import plus from "../../assets/plus.webp"; // Asset for the commented-out upload button
 
-// --- @breezystack/lamejs Integration ---
-import lamejs from '@breezystack/lamejs'; // Import from the new package
+import lamejs from '@breezystack/lamejs';
+
+const TOTAL_RECORDING_TIME_SECONDS = 120;
+const MINIMUM_RECORDING_DURATION_FOR_SUBMIT_SECONDS = 5;
 
 const EnglishFluencyTest = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(60);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(TOTAL_RECORDING_TIME_SECONDS);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false); // Renamed for clarity
   const [modalCountdown, setModalCountdown] = useState(5);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -24,21 +26,21 @@ const EnglishFluencyTest = () => {
   const [questionText, setQuestionText] = useState("Loading question...");
   const [uploadedFileName, setUploadedFileName] = useState(null);
   const [uploadError, setUploadError] = useState(null);
-  const [apiResponse, setApiResponse] = useState(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  // const [apiResponse, setApiResponse] = useState(null); // Removed: No longer displaying API response
+  const [isAnalyzing, setIsAnalyzing] = useState(false); // Still used to disable buttons
+  const [isAnalyzingPopupOpen, setIsAnalyzingPopupOpen] = useState(false); // New state for analyzing popup
   const [isEncoding, setIsEncoding] = useState(false);
 
   const userId = location.state?.userId;
   const courseId = location.state?.courseId;
   const studentEmail = location.state?.studentEmail;
 
-
   useEffect(() => {
     const initializeWasm = async () => {
       try {
         if (lamejs.WasmModule && typeof lamejs.WasmModule.isLoaded === 'function' && !lamejs.WasmModule.isLoaded()) {
           console.log("Attempting to initialize @breezystack/lamejs WASM module...");
-          await lamejs.WasmModule.load('/wasm/lame.wasm'); // Adjust wasm filename if different
+          await lamejs.WasmModule.load('/wasm/lame.wasm');
           console.log("@breezystack/lamejs WASM module loaded.");
         } else if (lamejs.WasmModule && lamejs.WasmModule.isLoaded && lamejs.WasmModule.isLoaded()) {
             console.log("@breezystack/lamejs WASM module already loaded.");
@@ -50,10 +52,8 @@ const EnglishFluencyTest = () => {
         setUploadError("Failed to initialize MP3 encoder (WASM).");
       }
     };
-
     initializeWasm();
   }, []);
-
 
   useEffect(() => {
     const fetchFluencyTestQuestionByCourseId = async () => {
@@ -70,14 +70,15 @@ const EnglishFluencyTest = () => {
     fetchFluencyTestQuestionByCourseId();
   }, [courseId]);
 
+  // Effect for the success modal and navigation
   useEffect(() => {
     let modalTimer;
-    if (isModalOpen) {
+    if (isSuccessModalOpen) {
       modalTimer = setInterval(() => {
         setModalCountdown((prev) => {
           if (prev <= 1) {
             clearInterval(modalTimer);
-            setIsModalOpen(false);
+            setIsSuccessModalOpen(false);
             navigate("/EssayQuestions", { state: { userId, courseId, studentEmail } });
             return 0;
           }
@@ -86,7 +87,7 @@ const EnglishFluencyTest = () => {
       }, 1000);
     }
     return () => clearInterval(modalTimer);
-  }, [isModalOpen, navigate, userId, courseId, studentEmail]);
+  }, [isSuccessModalOpen, navigate, userId, courseId, studentEmail]);
 
   const stopStreamTracks = () => {
     if (streamRef.current) {
@@ -96,6 +97,7 @@ const EnglishFluencyTest = () => {
   };
 
   const startRecording = async () => {
+    // ... (startRecording logic remains the same)
     setAudioURL(null); setUploadedFileName(null); setUploadError(null); setIsEncoding(false);
     stopStreamTracks();
     try {
@@ -126,11 +128,9 @@ const EnglishFluencyTest = () => {
         try {
           console.log("Starting MP3 encoding with @breezystack/lamejs (WASM)...");
 
-          // Check if WASM is loaded (if the library provides a way to check)
           if (lamejs.WasmModule && typeof lamejs.WasmModule.isLoaded === 'function' && !lamejs.WasmModule.isLoaded()) {
              console.warn("WASM module not loaded. Encoding might fail or use JS fallback.");
           }
-
 
           const arrayBuffer = await recordedBlob.arrayBuffer();
           const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -141,7 +141,7 @@ const EnglishFluencyTest = () => {
             throw new Error("@breezystack/lamejs does not have Mp3Encoder. Check import or library structure.");
           }
           
-          const mp3Encoder = new lamejs.Mp3Encoder(1, sampleRate, 128); // Mono, 128kbps
+          const mp3Encoder = new lamejs.Mp3Encoder(1, sampleRate, 128); 
 
           let pcmData;
           if (audioBuffer.numberOfChannels === 2) {
@@ -156,7 +156,7 @@ const EnglishFluencyTest = () => {
           for (let i = 0; i < pcmData.length; i++) pcmInt16[i] = Math.max(-1, Math.min(1, pcmData[i])) * 0x7FFF;
           
           const mp3Data = [];
-          const bufferSize = 1152; // LAME internal frame size for mono
+          const bufferSize = 1152; 
 
           for (let i = 0; i < pcmInt16.length; i += bufferSize) {
             const chunk = pcmInt16.subarray(i, i + bufferSize);
@@ -183,7 +183,8 @@ const EnglishFluencyTest = () => {
       };
 
       mediaRecorder.start(1000);
-      setIsRecording(true); setTimeLeft(60);
+      setIsRecording(true); 
+      setTimeLeft(TOTAL_RECORDING_TIME_SECONDS);
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) { stopRecording(); return 0; }
@@ -197,11 +198,16 @@ const EnglishFluencyTest = () => {
   };
 
   const stopRecording = () => {
+    // ... (stopRecording logic remains the same)
     clearInterval(timerRef.current);
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
       mediaRecorderRef.current.stop();
     } else {
-      setIsRecording(false); setIsEncoding(false); stopStreamTracks();
+      setIsRecording(false); 
+      if (!audioChunksRef.current || audioChunksRef.current.length === 0) {
+          setIsEncoding(false); 
+      }
+      stopStreamTracks();
     }
   };
 
@@ -212,12 +218,21 @@ const EnglishFluencyTest = () => {
     if (!audioURL) {
       setUploadError("No recording available."); return;
     }
-    setUploadError(null); setApiResponse(null); setIsAnalyzing(true);
+    const elapsedRecordingTime = TOTAL_RECORDING_TIME_SECONDS - timeLeft;
+    if (elapsedRecordingTime < MINIMUM_RECORDING_DURATION_FOR_SUBMIT_SECONDS) {
+      setUploadError(`Recording must be at least ${MINIMUM_RECORDING_DURATION_FOR_SUBMIT_SECONDS} seconds long to submit. Current duration: ${elapsedRecordingTime}s.`);
+      return;
+    }
+
+    setUploadError(null);
+    setIsAnalyzing(true);       // For disabling buttons
+    setIsAnalyzingPopupOpen(true); // Show analyzing popup
+
     try {
       const response = await fetch(audioURL);
       const audioBlob = await response.blob();
       if (audioBlob.size === 0) {
-        setUploadError("Cannot submit empty audio."); setIsAnalyzing(false); return;
+        throw new Error("Cannot submit empty audio.");
       }
       const formData = new FormData();
       formData.append("audio_file", audioBlob, "recording.mp3");
@@ -228,20 +243,31 @@ const EnglishFluencyTest = () => {
         const errorText = await apiResponseFetch.text();
         throw new Error(`HTTP error! status: ${apiResponseFetch.status}, message: ${errorText}`);
       }
-      const responseData = await apiResponseFetch.json();
-      setApiResponse(responseData);
+      // const responseData = await apiResponseFetch.json(); // We don't display it
+      // setApiResponse(responseData); // Not needed anymore
+
+      // On Success
+      setIsAnalyzingPopupOpen(false); // Close analyzing popup
+      setModalCountdown(5); // Reset countdown for success modal
+      setIsSuccessModalOpen(true); // Open success modal for navigation
+
     } catch (error) {
       setUploadError(`Failed to submit audio: ${error.message}.`);
+      setIsAnalyzingPopupOpen(false); // Close analyzing popup on error
     } finally {
-      setIsAnalyzing(false);
+      setIsAnalyzing(false); // Re-enable buttons if needed (though navigation might occur)
     }
   };
 
   const handleSubmitUploadedFile = async () => {
-    setUploadError(null); setApiResponse(null); setIsAnalyzing(true);
+    setUploadError(null);
     if (!fileInputRef.current.files || fileInputRef.current.files.length === 0) {
-      setUploadError("Please upload an audio file."); setIsAnalyzing(false); return;
+      setUploadError("Please upload an audio file."); return;
     }
+    
+    setIsAnalyzing(true);
+    setIsAnalyzingPopupOpen(true);
+
     const audioFile = fileInputRef.current.files[0];
     const formData = new FormData();
     formData.append("audio_file", audioFile);
@@ -249,19 +275,36 @@ const EnglishFluencyTest = () => {
       const response = await fetch("http://127.0.0.1:5000/api/flow_analyzer", {
         method: "POST", body: formData,
       });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const responseData = await response.json();
-      setApiResponse(responseData);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+      // const responseData = await response.json(); // Not displayed
+      // setApiResponse(responseData); // Not needed
+
+      // On Success
+      setIsAnalyzingPopupOpen(false);
+      setModalCountdown(5);
+      setIsSuccessModalOpen(true);
+
     } catch (error) {
-      setUploadError("Failed to upload audio file.");
+      setUploadError(`Failed to upload audio file: ${error.message}.`);
+      setIsAnalyzingPopupOpen(false);
     } finally {
       setIsAnalyzing(false);
     }
   };
 
-  const handleNext = () => { setIsModalOpen(true); setModalCountdown(5); };
+  // const handleNext = () => { setIsSuccessModalOpen(true); setModalCountdown(5); }; // Removed
   const fileInputRef = useRef(null);
-  const handleClick = () => { fileInputRef.current.click(); };
+  // const handleClick = () => { fileInputRef.current.click(); }; // For the commented out upload button
+
+  const isSubmitDisabled =
+    isAnalyzing ||
+    isRecording ||
+    isEncoding ||
+    (!audioURL && !uploadedFileName) ||
+    (audioURL && !uploadedFileName && timeLeft > (TOTAL_RECORDING_TIME_SECONDS - MINIMUM_RECORDING_DURATION_FOR_SUBMIT_SECONDS));
 
   return (
     <ExamMonitorLayout>
@@ -272,6 +315,7 @@ const EnglishFluencyTest = () => {
             <li className="font-medium">Important Instructions:</li>
             <li>Complete speech without interruptions.</li>
             <li>Cannot pause/stop midway.</li>
+            <li>Minimum recording duration for submission is {MINIMUM_RECORDING_DURATION_FOR_SUBMIT_SECONDS} seconds.</li>
           </ul>
           <div className="w-full max-w-2xl h-[300px] p-6 border border-blue-300 rounded-lg shadow-lg text-center">
             <p className="text-gray-600 mt-20">{questionText}</p>
@@ -290,42 +334,118 @@ const EnglishFluencyTest = () => {
               </button>
             )}
             <input type="file" ref={fileInputRef} className="hidden" accept="audio/*" onChange={(e) => {
-                if (e.target.files && e.target.files[0]) setUploadedFileName(e.target.files[0].name);
-                else setUploadedFileName(null);
-                setAudioURL(null); 
+                if (e.target.files && e.target.files[0]) {
+                    setUploadedFileName(e.target.files[0].name);
+                    setAudioURL(null);
+                    setUploadError(null);
+                } else {
+                    setUploadedFileName(null);
+                }
             }}/>
-            {/* <Button onClick={handleClick} variant="custom" image={plus} disabled={isRecording || isEncoding || isAnalyzing}/> */}
-            <Button text="Submit" variant="primary" onClick={uploadedFileName ? handleSubmitUploadedFile : handleSubmit} disabled={isAnalyzing || isRecording || isEncoding || (!audioURL && !uploadedFileName)}/>
-            <Button text="Next" variant="outline" onClick={handleNext} disabled={isAnalyzing || isEncoding || isRecording} />
+            <Button
+              text="Submit"
+              variant="primary"
+              onClick={uploadedFileName ? handleSubmitUploadedFile : handleSubmit}
+              disabled={isSubmitDisabled}
+            />
+            {/* Next Button Removed */}
           </div>
-          
+
           {uploadError && (<p className="text-red-500 text-xs mt-2 text-center">{uploadError}</p>)}
-          {isEncoding && (<p className="mt-2 text-blue-600 font-medium text-center">Encoding MP3 (WASM)...</p>)}
+          {isEncoding && (<p className="mt-2 text-blue-600 font-medium text-center">Encoding MP3...</p>)}
           {audioURL && !isEncoding && (
             <div className="mt-2 text-center">
-              <p className="text-green-600 font-medium">✅ MP3 Ready!</p>
+              <p className="text-green-600 font-medium">✅ Recording ready!</p>
+              {timeLeft <= (TOTAL_RECORDING_TIME_SECONDS - MINIMUM_RECORDING_DURATION_FOR_SUBMIT_SECONDS) ? (
+                <p className="text-sm text-green-700">You can now submit.</p>
+              ) : (
+                <p className="text-sm text-orange-600">
+                  Record for at least {MINIMUM_RECORDING_DURATION_FOR_SUBMIT_SECONDS} seconds to submit (currently {TOTAL_RECORDING_TIME_SECONDS - timeLeft}s).
+                </p>
+              )}
               <audio controls src={audioURL} className="mt-1 mx-auto"/>
-              <a href={audioURL} download="recording.mp3" className="block text-blue-500 hover:underline mt-1">Download MP3</a>
             </div>
           )}
           {uploadedFileName && (<p className="text-xs text-gray-500 mt-1">Selected for upload: {uploadedFileName}</p>)}
-          {isAnalyzing ? ( <div className="mt-6 p-6 border"><p>Analyzing...</p></div> ) : 
-            apiResponse && ( <div className="mt-6 p-6 border"><pre>{JSON.stringify(apiResponse, null, 2)}</pre></div> )
-          }
+          
+          {/* Removed API Response display and inline "Analyzing..." message */}
         </div>
       </div>
-      <Transition appear show={isModalOpen} as={React.Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={() => setIsModalOpen(false)}>
-          <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+
+      {/* Analyzing Popup */}
+      <Transition appear show={isAnalyzingPopupOpen} as={React.Fragment}>
+        <Dialog as="div" className="relative z-20" onClose={() => { /* Prevent manual close */ }}>
+          <Transition.Child
+            as={React.Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+          </Transition.Child>
           <div className="fixed inset-0 flex items-center justify-center p-4">
-            <Dialog.Panel className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-              <div className="flex flex-col items-center">
-                <CheckCircleIcon className="w-16 h-16 text-green-500" />
-                <Dialog.Title as="h2" className="mt-4 text-lg font-medium">Fluency Test Completed!</Dialog.Title>
-                <p className="mt-2 text-sm text-gray-600">Next: Essay questions.</p>
-                <span className="countdown font-mono text-6xl">{modalCountdown}</span>
-              </div>
-            </Dialog.Panel>
+            <Transition.Child
+              as={React.Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className="w-full max-w-xs rounded-lg bg-white p-6 shadow-xl text-center">
+                {/* You can add a spinner icon here if desired */}
+                {/* Example: <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-3" ...>...</svg> */}
+                <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                  Analyzing Audio
+                </Dialog.Title>
+                <div className="mt-2">
+                  <p className="text-sm text-gray-500">
+                    Please wait, this may take a moment...
+                  </p>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition>
+
+      {/* Success Modal (for navigation) */}
+      <Transition appear show={isSuccessModalOpen} as={React.Fragment}>
+        <Dialog as="div" className="relative z-10" onClose={() => setIsSuccessModalOpen(false) /* Allow close, though auto-navigates */}>
+         <Transition.Child
+            as={React.Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+          <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+          </Transition.Child>
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <Transition.Child
+                as={React.Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+                <div className="flex flex-col items-center">
+                  <CheckCircleIcon className="w-16 h-16 text-green-500" />
+                  <Dialog.Title as="h2" className="mt-4 text-lg font-medium">Fluency Test Submitted!</Dialog.Title>
+                  <p className="mt-2 text-sm text-gray-600">Proceeding to Essay questions.</p>
+                  <span className="countdown font-mono text-6xl mt-3">{modalCountdown}</span>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
           </div>
         </Dialog>
       </Transition>

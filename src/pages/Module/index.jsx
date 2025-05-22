@@ -270,7 +270,7 @@ const Module = () => {
                     </div>
                 </section>
             </main>
-            <Footer />
+            <Footer bgColor="bg-black" textColor="text-white"/>
         </div>
     );
 };

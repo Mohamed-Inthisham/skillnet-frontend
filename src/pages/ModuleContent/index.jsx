@@ -380,6 +380,7 @@ const ModuleContent = () => {
             try {
                 const response = await axios.get(`http://localhost:5001/contents/${contentId}`);
                 setContent(response.data);
+                console.log("Fetched Content Data:", response.data); // Debugging line
                 setLoadingContent(false);
             } catch (err) {
                 setErrorContent(err);
@@ -612,7 +613,7 @@ const ModuleContent = () => {
                     </div>
                 </div>
             </main>
-            <Footer />
+            <Footer bgColor="bg-black" textColor="text-white" />
         </div>
     );
 };
