@@ -490,7 +490,7 @@ const CompanyModulePage = () => {
   const [activeMcqFormForContentId, setActiveMcqFormForContentId] = useState(null); // contentId for which McqForm is displayed IN THE ACCORDION
   const [editingMcqData, setEditingMcqData] = useState(null); // Data for the MCQ being edited (passed to McqForm)
   const [isSavingMcq, setIsSavingMcq] = useState(false);
-
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
   const fetchCourseDataAndContents = async (showLoading = true) => {
     if(showLoading) setLoading(true);
     setError(null);
@@ -502,7 +502,7 @@ const CompanyModulePage = () => {
       const contentsPromise = axios.get(`http://localhost:5001/courses/${courseId}/contents`, { headers });
 
       const [courseResponse, contentsResponse] = await Promise.all([coursePromise, contentsPromise]);
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      
       setCourse(courseResponse.data);
       setCourseImagePreview(courseResponse.data.course_image ? `${API_URL}${courseResponse.data.course_image}` : javaModule);
       setContents(contentsResponse.data);
