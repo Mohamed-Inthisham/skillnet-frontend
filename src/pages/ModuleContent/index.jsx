@@ -613,7 +613,7 @@ const ModuleContent = () => {
                     </div>
                 </div>
             </main>
-            <Footer />
+            <Footer bgColor="bg-black" textColor="text-white" />
         </div>
     );
 };
