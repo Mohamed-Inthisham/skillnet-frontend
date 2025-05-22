@@ -417,15 +417,17 @@ import Footer from "../../layout/Footer";
 import { FaLock, FaCaretDown, FaSpinner, FaEdit, FaTrash, FaUpload, FaSave, FaTimes, FaPlus,  FaStar, FaRegStar } from "react-icons/fa";
 import javaModule from "../../assets/JavaModule.webp";
 import sysco from "../../assets/sysco.webp";
-import ModuleContentEditForm from "../../components/ModuleContentEditForm"; // For editing lesson details
-import AddNewLessonForm from "../../components/AddNewLessonForm"; // For adding new lessons entirely
+import ModuleContentEditForm from "../../components/ModuleContentEditForm";
+import AddNewLessonForm from "../../components/AddNewLessonForm";
 import CompanyEnglishFluencyTest from "../../components/CompanyEnglishFluencyTestForm";
-import McqForm from "../../components/McqForm"; // For adding/editing MCQs for a lesson
+import McqForm from "../../components/McqForm";
+import CompanyEssayQuestionForm from "../../components/CompanyEssayQuestionForm"; // <-- IMPORT NEW COMPONENT
 import axios from "axios";
 import { toast } from "react-toastify";
 
 // VideoPlayer component (remains the same)
 const VideoPlayer = ({ videoLink }) => {
+  // ... (your existing VideoPlayer code)
   const getEmbedUrl = (url) => {
     if (!url || typeof url !== 'string') return null;
     try {
@@ -474,45 +476,55 @@ const CompanyModulePage = () => {
   const [courseImageFile, setCourseImageFile] = useState(null);
   const imageInputRef = useRef(null);
 
-  const [editingLessonContentId, setEditingLessonContentId] = useState(null); // ID of lesson content being edited (ModuleContentEditForm)
-  const [showAddLessonForm, setShowAddLessonForm] = useState(false); // For the main "Add Lesson" form
+  const [editingLessonContentId, setEditingLessonContentId] = useState(null);
+  const [showAddLessonForm, setShowAddLessonForm] = useState(false);
   const [isSavingNewLesson, setIsSavingNewLesson] = useState(false);
 
-  const [openLessonIndex, setOpenLessonIndex] = useState(null); // Which accordion is open
+  const [openLessonIndex, setOpenLessonIndex] = useState(null);
   const [isExamDropdownOpen, setIsExamDropdownOpen] = useState(false);
   const [isFluencyTestOpen, setIsFluencyTestOpen] = useState(false);
+  const [isMcqEssayExamsOpen, setIsMcqEssayExamsOpen] = useState(false); // <-- NEW STATE
 
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
   // MCQ States
-  const [contentMcqs, setContentMcqs] = useState(new Map()); // Map<contentId, { data: [], isLoading: boolean, error: null }>
-  const [activeMcqFormForContentId, setActiveMcqFormForContentId] = useState(null); // contentId for which McqForm is displayed IN THE ACCORDION
-  const [editingMcqData, setEditingMcqData] = useState(null); // Data for the MCQ being edited (passed to McqForm)
+  const [contentMcqs, setContentMcqs] = useState(new Map());
+  const [activeMcqFormForContentId, setActiveMcqFormForContentId] = useState(null);
+  const [editingMcqData, setEditingMcqData] = useState(null);
   const [isSavingMcq, setIsSavingMcq] = useState(false);
 
+  // Essay Question States <-- NEW STATES
+  const [essayQuestions, setEssayQuestions] = useState([]);
+  const [isLoadingEssayQuestions, setIsLoadingEssayQuestions] = useState(false);
+  const [errorEssayQuestions, setErrorEssayQuestions] = useState(null);
+  const [showEssayQuestionForm, setShowEssayQuestionForm] = useState(false);
+  const [editingEssayQuestionData, setEditingEssayQuestionData] = useState(null);
+  const [isSavingEssayQuestion, setIsSavingEssayQuestion] = useState(false);
+
+
   const fetchCourseDataAndContents = async (showLoading = true) => {
+    // ... (your existing fetchCourseDataAndContents code)
     if(showLoading) setLoading(true);
     setError(null);
     try {
       const token = localStorage.getItem("accessToken");
       const headers = { Authorization: `Bearer ${token}` };
 
-      const coursePromise = axios.get(`http://localhost:5001/courses/${courseId}`, { headers });
-      const contentsPromise = axios.get(`http://localhost:5001/courses/${courseId}/contents`, { headers });
+      const coursePromise = axios.get(`${API_URL}/courses/${courseId}`, { headers });
+      const contentsPromise = axios.get(`${API_URL}/courses/${courseId}/contents`, { headers });
 
       const [courseResponse, contentsResponse] = await Promise.all([coursePromise, contentsPromise]);
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      
       setCourse(courseResponse.data);
       setCourseImagePreview(courseResponse.data.course_image ? `${API_URL}${courseResponse.data.course_image}` : javaModule);
       setContents(contentsResponse.data);
       
-      // Reset states that depend on contents
       setContentMcqs(new Map());
       setActiveMcqFormForContentId(null);
       setEditingMcqData(null);
-      setEditingLessonContentId(null); // Also reset lesson editing state
-
+      setEditingLessonContentId(null);
 
       if(showLoading) setLoading(false);
     } catch (err) {
@@ -528,15 +540,14 @@ const CompanyModulePage = () => {
     }
   }, [courseId]);
 
+  // ... (handleEditCourseDetails, handleCourseFieldChange, handleImageFileChange, handleSaveCourseDetails, handleCancelEditCourseDetails - all remain same)
   const handleEditCourseDetails = () => {
     setIsEditingCourseDetails(true);
-    // Close all other inline forms/views
     setShowAddLessonForm(false);
     setEditingLessonContentId(null);
     setOpenLessonIndex(null);
     setActiveMcqFormForContentId(null);
     setEditingMcqData(null);
-
     setTempCourseData({
       course_name: course.course_name,
       introduction: course.introduction,
@@ -544,14 +555,12 @@ const CompanyModulePage = () => {
       course_image_url: course.course_image,
     });
     setCourseImageFile(null);
-    setCourseImagePreview(course.course_image ? `http://localhost:5001${course.course_image}` : javaModule);
+    setCourseImagePreview(course.course_image ? `${API_URL}${course.course_image}` : javaModule);
     if(imageInputRef.current) imageInputRef.current.value = "";
   };
-
   const handleCourseFieldChange = (field, value) => {
     setCourse(prevCourse => ({ ...prevCourse, [field]: value }));
   };
-
   const handleImageFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -561,19 +570,16 @@ const CompanyModulePage = () => {
       reader.readAsDataURL(file);
     }
   };
-
   const handleSaveCourseDetails = async () => {
     if (!course.course_name?.trim()) { toast.error("Course Name is required."); return; }
     if (!course.introduction?.trim()) { toast.error("Course Introduction is required."); return; }
     if (!course.level?.trim()) { toast.error("Course Level is required."); return; }
-
     setIsSavingCourse(true);
     const formData = new FormData();
     formData.append("course_name", course.course_name);
     formData.append("introduction", course.introduction);
     formData.append("level", course.level);
     if (courseImageFile) formData.append("course_image", courseImageFile);
-
     try {
       const token = localStorage.getItem("accessToken");
       await axios.put(`${API_URL}/courses/${courseId}`, formData, {
@@ -589,7 +595,6 @@ const CompanyModulePage = () => {
       setIsSavingCourse(false);
     }
   };
-
   const handleCancelEditCourseDetails = () => {
     setCourse(prevCourse => ({
         ...prevCourse,
@@ -603,24 +608,20 @@ const CompanyModulePage = () => {
   };
 
   const toggleDropdown = (index) => {
+    // ... (your existing toggleDropdown code)
     if (isEditingCourseDetails) return;
-
     const contentId = contents[index]._id;
     const isCurrentlyOpen = openLessonIndex === index;
-
     if (isCurrentlyOpen) {
       setOpenLessonIndex(null);
-      // If closing the accordion, also close any inline forms for THIS lesson
       if (editingLessonContentId === contentId) setEditingLessonContentId(null);
       if (activeMcqFormForContentId === contentId) setActiveMcqFormForContentId(null);
-      setEditingMcqData(null); // Clear editing MCQ data regardless
+      setEditingMcqData(null); 
     } else {
       setOpenLessonIndex(index);
-      // If opening a new accordion, close forms from OTHER lessons
       if (editingLessonContentId && editingLessonContentId !== contentId) setEditingLessonContentId(null);
       if (activeMcqFormForContentId && activeMcqFormForContentId !== contentId) setActiveMcqFormForContentId(null);
-      setEditingMcqData(null); // Clear editing MCQ data
-
+      setEditingMcqData(null); 
       const mcqState = contentMcqs.get(contentId);
       if (!mcqState || mcqState.data === undefined) {
         fetchMcqsForContent(contentId);
@@ -628,21 +629,19 @@ const CompanyModulePage = () => {
     }
   };
 
-
-  const handleEditLessonDetails = (contentItem, index) => { // Renamed for clarity
+  // ... (Lesson content handlers: handleEditLessonDetails, handleCancelEditLessonDetails, handleSaveLessonDetails, handleDeleteContent, handleToggleAddLessonForm, handleAddNewLesson - all remain same)
+  const handleEditLessonDetails = (contentItem, index) => { 
     if (isEditingCourseDetails) return;
-    setEditingLessonContentId(contentItem._id); // Show ModuleContentEditForm
-    setActiveMcqFormForContentId(null);    // Hide McqForm
+    setEditingLessonContentId(contentItem._id); 
+    setActiveMcqFormForContentId(null);    
     setEditingMcqData(null);
-    setShowAddLessonForm(false);            // Hide main "Add Lesson" form
-    setOpenLessonIndex(index);              // Ensure accordion is open
+    setShowAddLessonForm(false);            
+    setOpenLessonIndex(index);              
   };
-
-  const handleCancelEditLessonDetails = () => { // Renamed for clarity
+  const handleCancelEditLessonDetails = () => { 
     setEditingLessonContentId(null);
   };
-
-  const handleSaveLessonDetails = async (contentId, updatedData) => { // Renamed for clarity
+  const handleSaveLessonDetails = async (contentId, updatedData) => { 
     if (isEditingCourseDetails) return;
     try {
       const token = localStorage.getItem("accessToken");
@@ -650,13 +649,12 @@ const CompanyModulePage = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Lesson updated successfully!");
-      await fetchCourseDataAndContents(false); // Refreshes and closes forms
+      await fetchCourseDataAndContents(false); 
       setEditingLessonContentId(null);
     } catch (error) {
       toast.error(error.response?.data?.msg || "Failed to update lesson.");
     }
   };
-
   const handleDeleteContent = async (contentId) => {
     if (isEditingCourseDetails) return;
     if (window.confirm("Are you sure you want to delete this lesson? This will also delete any associated MCQs.")) {
@@ -666,7 +664,6 @@ const CompanyModulePage = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         toast.success("Lesson deleted successfully!");
-        // No need to manually close forms, fetchCourseDataAndContents will reset them
         await fetchCourseDataAndContents(false);
       } catch (error)
  {
@@ -674,17 +671,14 @@ const CompanyModulePage = () => {
       }
     }
   };
-
-  const handleToggleAddLessonForm = () => { // This is for the main "Add Lesson" button, not within accordion
+  const handleToggleAddLessonForm = () => { 
     if (isEditingCourseDetails) return;
     setShowAddLessonForm(!showAddLessonForm);
-    // Close any open accordion and its inline forms
     setOpenLessonIndex(null);
     setEditingLessonContentId(null);
     setActiveMcqFormForContentId(null);
     setEditingMcqData(null);
   };
-
   const handleAddNewLesson = async (newLessonDataArray) => {
     if (isEditingCourseDetails) return;
     setIsSavingNewLesson(true);
@@ -701,7 +695,7 @@ const CompanyModulePage = () => {
         } else {
           toast.success("Lesson(s) added successfully!");
         }
-        await fetchCourseDataAndContents(false); // Refreshes and closes forms
+        await fetchCourseDataAndContents(false); 
         setShowAddLessonForm(false);
       } else {
         toast.error(response.data.msg || "Failed to add lesson(s).");
@@ -713,12 +707,12 @@ const CompanyModulePage = () => {
     }
   };
 
-  // --- MCQ Handlers ---
+  // --- MCQ Handlers --- (remain same)
   const fetchMcqsForContent = async (contentId, showSpinner = true) => {
     setContentMcqs(prev => new Map(prev).set(contentId, { data: prev.get(contentId)?.data || [], isLoading: showSpinner, error: null }));
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get(`http://localhost:5001/contents/${contentId}/mcqs`, {
+      const response = await axios.get(`${API_URL}/contents/${contentId}/mcqs`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setContentMcqs(prev => new Map(prev).set(contentId, { data: response.data, isLoading: false, error: null }));
@@ -727,40 +721,35 @@ const CompanyModulePage = () => {
       setContentMcqs(prev => new Map(prev).set(contentId, { data: prev.get(contentId)?.data || [], isLoading: false, error: err }));
     }
   };
-
   const showMcqFormForAdd = (contentId) => {
-    setEditingMcqData(null);                // Clear for new MCQ
-    setActiveMcqFormForContentId(contentId); // Show McqForm IN ACCORDION
-    setEditingLessonContentId(null);        // Hide lesson details edit form
+    setEditingMcqData(null);                
+    setActiveMcqFormForContentId(contentId); 
+    setEditingLessonContentId(null);        
   };
-
   const showMcqFormForEdit = (mcq, contentId) => {
-    setEditingMcqData(mcq);                 // Populate for editing
-    setActiveMcqFormForContentId(contentId); // Show McqForm IN ACCORDION
-    setEditingLessonContentId(null);        // Hide lesson details edit form
+    setEditingMcqData(mcq);                 
+    setActiveMcqFormForContentId(contentId); 
+    setEditingLessonContentId(null);        
   };
-
   const cancelMcqForm = () => {
     setActiveMcqFormForContentId(null);
     setEditingMcqData(null);
   };
-
   const handleSaveMcq = async (mcqPayload, mcqIdToUpdate, contentIdForNewMcq) => {
     setIsSavingMcq(true);
     const token = localStorage.getItem("accessToken");
     const headers = { Authorization: `Bearer ${token}` };
     const targetContentId = mcqIdToUpdate ? editingMcqData.content_id : contentIdForNewMcq;
-
     try {
       if (mcqIdToUpdate) {
-        await axios.put(`http://localhost:5001/mcqs/${mcqIdToUpdate}`, mcqPayload, { headers });
+        await axios.put(`${API_URL}/mcqs/${mcqIdToUpdate}`, mcqPayload, { headers });
         toast.success("MCQ updated successfully!");
       } else {
-        await axios.post(`http://localhost:5001/contents/${targetContentId}/mcqs`, mcqPayload, { headers });
+        await axios.post(`${API_URL}/contents/${targetContentId}/mcqs`, mcqPayload, { headers });
         toast.success("MCQ added successfully!");
       }
       fetchMcqsForContent(targetContentId, false);
-      cancelMcqForm(); // Close the McqForm from accordion
+      cancelMcqForm(); 
     } catch (error) {
       toast.error(error.response?.data?.msg || "Failed to save MCQ.");
       console.error("Error saving MCQ:", error);
@@ -768,19 +757,18 @@ const CompanyModulePage = () => {
       setIsSavingMcq(false);
     }
   };
-
   const handleDeleteMcq = async (mcqId, contentId) => {
     if (window.confirm("Are you sure you want to delete this MCQ?")) {
       setIsSavingMcq(true);
       const token = localStorage.getItem("accessToken");
       try {
-        await axios.delete(`http://localhost:5001/mcqs/${mcqId}`, {
+        await axios.delete(`${API_URL}/mcqs/${mcqId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         toast.success("MCQ deleted successfully!");
         fetchMcqsForContent(contentId, false);
         if (editingMcqData && editingMcqData._id === mcqId) {
-            cancelMcqForm(); // Close form if deleted MCQ was being edited
+            cancelMcqForm(); 
         }
       } catch (error) {
         toast.error(error.response?.data?.msg || "Failed to delete MCQ.");
@@ -791,11 +779,107 @@ const CompanyModulePage = () => {
     }
   };
 
-
   const toggleExamDropdown = () => setIsExamDropdownOpen(!isExamDropdownOpen);
-  const toggleFluencyTest = () => setIsFluencyTestOpen(!isFluencyTestOpen); // <<< This toggles the fluency test component's visibility
+  const toggleFluencyTest = () => setIsFluencyTestOpen(!isFluencyTestOpen);
+
+  // --- Essay Question Handlers --- <-- NEW FUNCTIONS
+  const fetchEssayQuestions = async (showLoadingSpinner = true) => {
+    if (showLoadingSpinner) setIsLoadingEssayQuestions(true);
+    setErrorEssayQuestions(null);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(`${API_URL}/courses/${courseId}/essay_questions`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setEssayQuestions(response.data);
+    } catch (err) {
+      console.error("Error fetching essay questions:", err);
+      const errorMsg = err.response?.data?.msg || "Failed to load essay questions.";
+      setErrorEssayQuestions(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      if (showLoadingSpinner) setIsLoadingEssayQuestions(false);
+    }
+  };
+
+  const toggleMcqEssayExams = () => {
+    const newOpenState = !isMcqEssayExamsOpen;
+    setIsMcqEssayExamsOpen(newOpenState);
+    if (newOpenState && essayQuestions.length === 0 && !isLoadingEssayQuestions && !errorEssayQuestions) { 
+      fetchEssayQuestions();
+    }
+    if (!newOpenState) { // If closing the accordion
+      setShowEssayQuestionForm(false);
+      setEditingEssayQuestionData(null);
+    }
+  };
+  
+  const handleOpenAddEssayForm = () => {
+    setEditingEssayQuestionData(null);
+    setShowEssayQuestionForm(true);
+  };
+
+  const handleOpenEditEssayForm = (essayQuestion) => {
+    setEditingEssayQuestionData(essayQuestion);
+    setShowEssayQuestionForm(true);
+  };
+
+  const handleCloseEssayForm = () => {
+    setShowEssayQuestionForm(false);
+    setEditingEssayQuestionData(null);
+  };
+
+  const handleSaveEssayQuestion = async (formData) => {
+    setIsSavingEssayQuestion(true);
+    const token = localStorage.getItem("accessToken");
+    const headers = { Authorization: `Bearer ${token}` };
+    const payload = {
+      question: formData.question,
+      correctAnswer: formData.correctAnswer,
+    };
+
+    try {
+      if (editingEssayQuestionData && editingEssayQuestionData._id) {
+        await axios.put(`${API_URL}/essay_questions/${editingEssayQuestionData._id}`, payload, { headers });
+        toast.success("Essay question updated successfully!");
+      } else {
+        await axios.post(`${API_URL}/courses/${courseId}/essay_questions`, payload, { headers });
+        toast.success("Essay question added successfully!");
+      }
+      await fetchEssayQuestions(false); 
+      handleCloseEssayForm();
+    } catch (error) {
+      toast.error(error.response?.data?.msg || "Failed to save essay question.");
+      console.error("Error saving essay question:", error);
+    } finally {
+      setIsSavingEssayQuestion(false);
+    }
+  };
+
+  const handleDeleteEssayQuestion = async (essayQuestionId) => {
+    if (window.confirm("Are you sure you want to delete this essay question?")) {
+      setIsSavingEssayQuestion(true); 
+      const token = localStorage.getItem("accessToken");
+      try {
+        await axios.delete(`${API_URL}/essay_questions/${essayQuestionId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        toast.success("Essay question deleted successfully!");
+        await fetchEssayQuestions(false); 
+        if (editingEssayQuestionData && editingEssayQuestionData._id === essayQuestionId) {
+            handleCloseEssayForm(); 
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.msg || "Failed to delete essay question.");
+        console.error("Error deleting essay question:", error);
+      } finally {
+        setIsSavingEssayQuestion(false);
+      }
+    }
+  };
   
   const handleDeleteCourseSection = async (section) => {
+      // ... (your existing handleDeleteCourseSection code)
       if (section === "course") {
           if (window.confirm("Are you sure you want to delete this entire course? This action cannot be undone.")) {
               try {
@@ -810,7 +894,6 @@ const CompanyModulePage = () => {
       }
   };
 
-
   if (loading) return <div className="flex justify-center items-center min-h-screen"><FaSpinner className="animate-spin text-blue-500 text-4xl" /></div>;
   if (error) return <div className="flex justify-center items-center min-h-screen text-red-500">Error: {error.message}</div>;
   if (!course) return <div className="flex justify-center items-center min-h-screen">Course not found.</div>;
@@ -819,8 +902,9 @@ const CompanyModulePage = () => {
     <div className="bg-gray-50 min-h-screen flex flex-col font-[Poppins]">
       <UserHeader />
       <main className="flex-1 py-10 px-4 sm:px-10 md:px-20 bg-gray-100">
-        {/* Course Header & Details Section (same as before) */}
+        {/* Course Header & Details Section */}
         <section className="mb-10 bg-white p-6 sm:p-8 rounded-lg shadow-xl relative">
+           {/* ... (Your existing course header & details JSX, no changes needed here for this feature) ... */}
           <div className="absolute top-4 right-4 flex space-x-2 z-10">
             {isEditingCourseDetails ? (
               <>
@@ -904,9 +988,10 @@ const CompanyModulePage = () => {
 
         {/* Lessons Section */}
         <section className="mb-10 bg-white p-6 sm:p-8 rounded-lg shadow-xl relative">
+           {/* ... (Your existing Lessons JSX, no changes needed here for this feature) ... */}
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-gray-800">Lessons</h2>
-            {!isEditingCourseDetails && ( // Main "Add Lesson" button
+            {!isEditingCourseDetails && ( 
               <button
                 onClick={handleToggleAddLessonForm}
                 disabled={isSavingNewLesson}
@@ -919,7 +1004,7 @@ const CompanyModulePage = () => {
             )}
           </div>
 
-          {showAddLessonForm && !isEditingCourseDetails && ( // Display AddNewLessonForm if active
+          {showAddLessonForm && !isEditingCourseDetails && ( 
             <AddNewLessonForm
                 onSave={handleAddNewLesson}
                 onCancel={handleToggleAddLessonForm}
@@ -927,11 +1012,10 @@ const CompanyModulePage = () => {
             />
           )}
 
-          {!showAddLessonForm && !isEditingCourseDetails && ( // Display list of lessons
+          {!showAddLessonForm && !isEditingCourseDetails && ( 
             <div>
               {contents.length > 0 ? contents.map((content, index) => (
                 <div key={content._id} className="mb-2">
-                  {/* Lesson Accordion Header */}
                   <div className={`flex items-center justify-between p-4 bg-gray-50 shadow-sm 
                                  ${openLessonIndex === index && editingLessonContentId !== content._id && activeMcqFormForContentId !== content._id ? 'rounded-t-lg' : 'rounded-lg'}`}>
                     <div className="flex items-center flex-grow cursor-pointer" onClick={() => toggleDropdown(index)}>
@@ -941,13 +1025,11 @@ const CompanyModulePage = () => {
                       <div><h3 className="text-sm text-gray-800 font-medium">{content.lesson_name}</h3></div>
                     </div>
                     <div className="flex space-x-3 items-center ml-4">
-                      {/* Show Edit Lesson button only if no inline form is active for THIS lesson */}
                       {editingLessonContentId !== content._id && activeMcqFormForContentId !== content._id && (
                         <button title="Edit Lesson Details" className="text-blue-600 hover:text-blue-800 p-1" onClick={(e) => { e.stopPropagation(); handleEditLessonDetails(content, index); }}>
                           <FaEdit size={16} />
                         </button>
                       )}
-                       {/* Placeholder if an inline form is active, to maintain layout */}
                       {(editingLessonContentId === content._id || activeMcqFormForContentId === content._id) && <span className="p-1 w-[20px]"></span>}
                       <button title="Delete Lesson" className="text-red-500 hover:text-red-700 p-1" onClick={(e) => { e.stopPropagation(); handleDeleteContent(content._id); }}>
                         <FaTrash size={16} />
@@ -956,16 +1038,15 @@ const CompanyModulePage = () => {
                     </div>
                   </div>
 
-                  {/* Accordion Content: Shows Lesson Edit Form OR McqForm OR Video+MCQs */}
                   {openLessonIndex === index && (
                     <div className="p-4 bg-white rounded-b-lg shadow-inner border-t border-gray-200">
-                      {editingLessonContentId === content._id ? ( // If editing lesson details
+                      {editingLessonContentId === content._id ? ( 
                         <ModuleContentEditForm
                           content={content}
                           onSave={handleSaveLessonDetails}
                           onCancel={handleCancelEditLessonDetails}
                         />
-                      ) : activeMcqFormForContentId === content._id ? ( // If McqForm is active for this content
+                      ) : activeMcqFormForContentId === content._id ? ( 
                         <McqForm
                           contentId={content._id}
                           initialData={editingMcqData}
@@ -973,25 +1054,21 @@ const CompanyModulePage = () => {
                           onCancel={cancelMcqForm}
                           isSaving={isSavingMcq}
                         />
-                      ) : ( // Default view: Video and MCQ list
+                      ) : ( 
                         <>
                           <VideoPlayer videoLink={content.link} />
                           <p className="text-xs text-gray-600 mt-3"><strong>Original Link:</strong> <a href={content.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">{content.link}</a></p>
-
-                          {/* MCQ Section for this lesson */}
                           <div className="mt-6 pt-4 border-t border-gray-200">
                             <div className="flex justify-between items-center mb-3">
                               <h4 className="text-md font-semibold text-gray-700">Lesson Quiz (MCQ)</h4>
                                 <button
-                                  onClick={() => showMcqFormForAdd(content._id)} // This button now shows McqForm inline
+                                  onClick={() => showMcqFormForAdd(content._id)} 
                                   className="bg-green-500 hover:bg-green-600 text-white text-xs font-semibold py-1 px-2.5 rounded-md shadow-sm flex items-center"
                                   title="Add MCQ to this lesson"
                                 >
                                   <FaPlus className="mr-1" size={10} /> Add MCQ
                                 </button>
                             </div>
-
-                            {/* Display List of MCQs */}
                             {(() => {
                                 const mcqState = contentMcqs.get(content._id);
                                 if (!mcqState) {
@@ -1040,7 +1117,7 @@ const CompanyModulePage = () => {
                                 }
                                 return null;
                               })()}
-                          </div> {/* End MCQ Section for this lesson */}
+                          </div> 
                         </>
                       )}
                     </div>
@@ -1052,64 +1129,127 @@ const CompanyModulePage = () => {
           {isEditingCourseDetails && <p className="text-sm text-gray-500 italic text-center mt-4">Finish editing course details to manage lessons.</p>}
         </section>
 
-        {/* Other sections (Exam, Certificate, etc. - same as before) */}
-         <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative">
-           <h2 className="text-xl font-bold text-gray-800 mb-4">Exam</h2>
-           <div className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer" onClick={toggleExamDropdown}>
+        {/* Exam Section - MODIFIED */}
+        <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Exam</h2>
+          <div className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer" onClick={toggleExamDropdown}>
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                 {/* You can put an icon here if you want, e.g., <FaClipboardList className="text-blue-800 text-xl" /> */}
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                 {/* Icon can be FaClipboardList or similar */}
               </div>
-              <div><h3 className="text-sm text-gray-800 font-medium">Manage Exams</h3></div>
+              <div><h3 className="text-sm text-gray-800 font-medium">Manage Exam Components</h3></div>
             </div>
-            <FaCaretDown className={`text-blue-500 mr-2 transition-transform duration-200 ${isExamDropdownOpen ? 'transform rotate-180' : ''}`} />
+            <FaCaretDown className={`text-purple-500 mr-2 transition-transform duration-200 ${isExamDropdownOpen ? 'transform rotate-180' : ''}`} />
           </div>
           {isExamDropdownOpen && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg shadow-sm">
+            <div className="mt-4 p-4 bg-gray-100 rounded-lg shadow-inner">
               {/* Fluency Test Item */}
-              <div className="flex items-center justify-between p-4 mb-2 bg-white rounded-lg shadow-sm cursor-pointer hover:bg-gray-100" onClick={toggleFluencyTest}>
+              <div className="flex items-center justify-between p-4 mb-3 bg-white rounded-lg shadow-sm cursor-pointer hover:bg-gray-50" onClick={toggleFluencyTest}>
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4"><span className="text-blue-800 font-semibold">1</span></div>
-                  <div><h3 className="text-sm text-gray-800">Fluency Test</h3></div>
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3"><span className="text-blue-800 font-semibold">1</span></div>
+                  <div><h3 className="text-sm text-gray-800 font-medium">Fluency Test</h3></div>
                 </div>
                 <FaCaretDown className={`text-blue-500 transition-transform duration-200 ${isFluencyTestOpen ? 'transform rotate-180' : ''}`} />
               </div>
-              {/* Conditionally render CompanyEnglishFluencyTest */}
               {isFluencyTestOpen && (
-                <div className="mt-4 p-4 border-t border-gray-200">
+                <div className="mt-0 mb-3 p-4 bg-white rounded-b-lg shadow-sm border-t border-gray-200">
                   <CompanyEnglishFluencyTest courseId={courseId} />
                 </div>
               )}
-              {/* MCQ / Essay Exams Item */}
-              <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:bg-gray-100 mt-2" onClick={() => navigate(`/exams/${courseId}`)}>
+
+              {/* MCQ / Essay Exams Item - MODIFIED */}
+              <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:bg-gray-50" onClick={toggleMcqEssayExams}>
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4"><span className="text-blue-800 font-semibold">2</span></div>
-                  <div><h3 className="text-sm text-gray-800">MCQ / Essay Exams</h3></div>
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3"><span className="text-green-800 font-semibold">2</span></div>
+                  <div><h3 className="text-sm text-gray-800 font-medium">Essay Questions</h3></div>
                 </div>
-                <FaCaretDown className="text-blue-500" /> {/* This could also be a right arrow or no arrow */}
+                <FaCaretDown className={`text-green-500 transition-transform duration-200 ${isMcqEssayExamsOpen ? 'transform rotate-180' : ''}`} />
               </div>
+
+              {/* Conditionally render Essay Question CRUD */}
+              {isMcqEssayExamsOpen && (
+                <div className="mt-0 p-4 bg-white rounded-b-lg shadow-sm border-t border-gray-200">
+                  <div className="mb-4">
+                    <h4 className="text-md font-semibold text-gray-700 mb-1">Essay Questions Management</h4>
+                
+                  </div>
+
+                  {!showEssayQuestionForm && (
+                    <button
+                      onClick={handleOpenAddEssayForm}
+                      className="mb-4 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2 px-3.5 rounded-md shadow-sm flex items-center disabled:opacity-70"
+                      disabled={isSavingEssayQuestion}
+                    >
+                      <FaPlus className="mr-1.5" size={12} /> Add Essay Question
+                    </button>
+                  )}
+
+                  {showEssayQuestionForm ? (
+                    <CompanyEssayQuestionForm
+                      courseId={courseId}
+                      initialData={editingEssayQuestionData}
+                      onSave={handleSaveEssayQuestion}
+                      onCancel={handleCloseEssayForm}
+                      isSaving={isSavingEssayQuestion}
+                    />
+                  ) : (
+                    isLoadingEssayQuestions ? (
+                      <div className="flex justify-center items-center p-3"><FaSpinner className="animate-spin text-blue-500" /> <span className="ml-2 text-sm text-gray-500">Loading essay questions...</span></div>
+                    ) : errorEssayQuestions ? (
+                      <p className="text-red-500 text-sm p-3 bg-red-50 rounded-md">{errorEssayQuestions}</p>
+                    ) : essayQuestions.length > 0 ? (
+                      <div className="space-y-3">
+                        {essayQuestions.map((eq, index) => (
+                          <div key={eq._id} className="p-3.5 border border-gray-200 rounded-md bg-gray-50 shadow-sm">
+                            <div className="flex justify-between items-start mb-1.5">
+                              <p className="text-sm font-medium text-gray-800 flex-grow break-words pr-2">
+                                {index + 1}. {eq.question}
+                              </p>
+                              <div className="flex-shrink-0 flex space-x-2.5 ml-2">
+                                <button onClick={() => handleOpenEditEssayForm(eq)} title="Edit Essay Question" className="text-blue-600 hover:text-blue-700 p-0.5 disabled:opacity-50" disabled={isSavingEssayQuestion}>
+                                  <FaEdit size={14} />
+                                </button>
+                                <button onClick={() => handleDeleteEssayQuestion(eq._id)} title="Delete Essay Question" className="text-red-500 hover:text-red-600 p-0.5 disabled:opacity-50" disabled={isSavingEssayQuestion}>
+                                  <FaTrash size={14} />
+                                </button>
+                              </div>
+                            </div>
+                            <details className="text-xs mt-1">
+                                <summary className="cursor-pointer text-gray-500 hover:text-gray-700 font-medium">View Correct Answer</summary>
+                                <p className="text-gray-600 mt-1.5 whitespace-pre-wrap bg-gray-100 p-2 rounded-md border border-gray-200">{eq.correctAnswer}</p>
+                            </details>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic py-3">No essay questions added for this course yet.</p>
+                    )
+                  )}
+                  
+                </div>
+              )}
             </div>
           )}
         </section>
 
         {/* Certificate Section */}
         <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Claim Your Course Certificate</h2>
+           {/* ... (Your existing Certificate Section JSX) ... */}
+           <h2 className="text-xl font-bold text-gray-800 mb-4">Claim Your Course Certificate</h2>
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg shadow-sm">
             <div className="flex items-center">
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                {/* Icon for certificate, e.g., <FaCertificate className="text-blue-800 text-xl" /> */}
               </div>
               <div><h3 className="text-sm text-gray-800 font-medium">Certificate</h3><p className="text-xs text-gray-500">Details about certificate generation</p></div>
             </div>
             <FaCaretDown className="text-blue-500 mr-2" />
           </div>
-          {/* Potentially add dropdown content here if this section is expandable */}
         </section>
 
         {/* Job Application Insights Section */}
         <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Job Application Insights (For Students)</h2>
+           {/* ... (Your existing Job Application Insights Section JSX) ... */}
+           <h2 className="text-xl font-bold text-gray-800 mb-4">Job Application Insights (For Students)</h2>
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer">
             <div className="flex items-center">
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4"><FaUpload className="text-blue-800 text-xl" /></div>
@@ -1117,7 +1257,6 @@ const CompanyModulePage = () => {
             </div>
             <FaCaretDown className="text-blue-500 mr-2" />
           </div>
-          {/* Potentially add dropdown content here if this section is expandable */}
         </section>
       </main>
       <Footer />
