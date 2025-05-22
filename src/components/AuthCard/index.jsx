@@ -27,7 +27,7 @@ const AuthCard = () => {
       console.log("Login successful, JWT received:", accessToken);
 
       try {
-        const decodedToken = jwtDecode(accessToken); // Correct jwtDecode import and function call
+        const decodedToken = jwtDecode(accessToken);
         console.log("Decoded JWT:", decodedToken); // Log decoded JWT for inspection!
         const userRole = decodedToken.role; // Access 'role' claim - assuming backend adds it as 'role'
         //-------------------------
@@ -35,8 +35,26 @@ const AuthCard = () => {
         const userEmailFromToken = decodedToken.sub; // Extract user email (subject)
         //-------------------------
         localStorage.setItem("accessToken", accessToken);
-        // **ADD THIS LINE TO STORE DECODED JWT IN LOCALSTORAGE**
         localStorage.setItem("decodedJWT", JSON.stringify(decodedToken)); // Store decoded JWT as string
+
+        // --- Store username (firstname + lastname) ---
+        // Adjust these claim names based on your actual JWT payload from the backend
+        const userFirstname = decodedToken.firstname;
+        const userLastname = decodedToken.lastname;
+
+        if (userFirstname && userLastname) {
+          const username = `${userFirstname} ${userLastname}`;
+          localStorage.setItem("username", username);
+          console.log("Username stored:", username);
+        } else {
+          // Fallback if firstname/lastname are not in the token
+          localStorage.setItem("username", decodedToken.identity || "User"); // Use email (identity) or a generic "User"
+          console.warn(
+            "Firstname or lastname not found in JWT claims. Storing identity/generic 'User' as username."
+          );
+        }
+        // --- End store username ---
+
 
         if (userRole === "student") {
           navigate("/Home");
@@ -53,19 +71,22 @@ const AuthCard = () => {
           navigate("/CompanyDashboard");
         } else {
           console.warn("Unknown user role:", userRole);
-          setLoginError("Login successful, but unknown user role. Redirecting to default.");
-          navigate("/");
+          setLoginError(
+            "Login successful, but unknown user role. Redirecting to default."
+          );
+          navigate("/"); // Or a generic dashboard / default page
         }
       } catch (decodeError) {
         console.error("Error decoding JWT:", decodeError);
         setLoginError("Error processing login. Please try again.");
       }
-
     } catch (error) {
       console.error("Login failed:", error);
-      setLoginError("Invalid email or password.");
+      // setLoginError("Invalid email or password."); // Generic message
       if (error.response && error.response.data && error.response.data.msg) {
-        setLoginError(error.response.data.msg);
+        setLoginError(error.response.data.msg); // Use backend message
+      } else {
+        setLoginError("Login failed. Please check your credentials."); // More specific generic message
       }
     }
   };
@@ -80,7 +101,9 @@ const AuthCard = () => {
       </p>
 
       <form className="" onSubmit={handleLogin}>
-        {loginError && <p className="text-red-500 text-sm mb-2">{loginError}</p>}
+        {loginError && (
+          <p className="text-red-500 text-sm mb-2 text-center">{loginError}</p>
+        )}
         <div>
           <p className="text-[15px] mb-2">User name</p>
           <InputField
@@ -89,6 +112,7 @@ const AuthCard = () => {
             icon={<img src={UserIcon} alt="User Icon" className="w-7 h-6" />}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required // Add required attribute for basic browser validation
           />
         </div>
         <div className="mt-4 mb-4">
@@ -99,13 +123,14 @@ const AuthCard = () => {
             icon={<img src={LockIcon} alt="Lock Icon" className="w-6 h-6" />}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required // Add required attribute
           />
         </div>
         <p className="text-sm text-black mb-4">
           Don't have an account?{" "}
-          <span className="text-blue-500 cursor-pointer">
-            <Link to="/StudentRegister">Register</Link>
-          </span>
+          <Link to="/StudentRegister" className="text-blue-500 cursor-pointer hover:underline"> {/* Make it clear it's a Link */}
+            Register
+          </Link>
         </p>
         <Button text="Login" className="w-full" type="submit" />
       </form>
