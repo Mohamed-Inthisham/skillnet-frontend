@@ -31,10 +31,10 @@ const ExamRules = () => {
             <main className="flex-grow flex justify-center items-center p-10">
                 <div className="w-full max-w-3xl bg-white shadow-lg rounded-lg p-8 border border-gray-200">
                     <h2 className="text-2xl font-semibold text-center mb-6">Exam General Guidelines</h2>
-                    <ul className="list-disc list-inside text-gray-700 space-y-2">
+                    <ul className="list-disc list-inside text-gray-700 space-y-2 text-justify">
                         <li>Ensure your face is clearly visible throughout the exam.</li>
                         <li>The system will continuously verify your identity using face recognition technology.</li>
-                        <li>Any mismatch or unrecognized face will trigger an alert and may result in disqualification.</li>
+                        <li>Any mismatch or unrecognized face will trigger an alert</li>
                         <li>Choose a quiet, distraction-free, and well-lit location.</li>
                         <li>Avoid having other individuals or devices in your surroundings.</li>
                         <li>No talking or external assistance is allowed during the exam.</li>
