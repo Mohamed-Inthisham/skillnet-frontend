@@ -419,7 +419,7 @@ import javaModule from "../../assets/JavaModule.webp";
 import sysco from "../../assets/sysco.webp";
 import ModuleContentEditForm from "../../components/ModuleContentEditForm"; // For editing lesson details
 import AddNewLessonForm from "../../components/AddNewLessonForm"; // For adding new lessons entirely
-import CompanyEnglishFluencyTest from "../../components/CompanyEnglishFluencyTest";
+import CompanyEnglishFluencyTest from "../../components/CompanyEnglishFluencyTestForm";
 import McqForm from "../../components/McqForm"; // For adding/editing MCQs for a lesson
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -502,9 +502,9 @@ const CompanyModulePage = () => {
       const contentsPromise = axios.get(`http://localhost:5001/courses/${courseId}/contents`, { headers });
 
       const [courseResponse, contentsResponse] = await Promise.all([coursePromise, contentsPromise]);
-
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
       setCourse(courseResponse.data);
-      setCourseImagePreview(courseResponse.data.course_image ? `http://localhost:5001${courseResponse.data.course_image}` : javaModule);
+      setCourseImagePreview(courseResponse.data.course_image ? `${API_URL}${courseResponse.data.course_image}` : javaModule);
       setContents(contentsResponse.data);
       
       // Reset states that depend on contents
@@ -576,7 +576,7 @@ const CompanyModulePage = () => {
 
     try {
       const token = localStorage.getItem("accessToken");
-      await axios.put(`http://localhost:5001/courses/${courseId}`, formData, {
+      await axios.put(`${API_URL}/courses/${courseId}`, formData, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
       });
       toast.success("Course updated successfully!");
@@ -597,7 +597,7 @@ const CompanyModulePage = () => {
         introduction: tempCourseData.introduction,
         level: tempCourseData.level,
     }));
-    setCourseImagePreview(tempCourseData.course_image_url ? `http://localhost:5001${tempCourseData.course_image_url}` : javaModule);
+    setCourseImagePreview(tempCourseData.course_image_url ? `${API_URL}${tempCourseData.course_image_url}` : javaModule);
     setCourseImageFile(null);
     setIsEditingCourseDetails(false);
   };
@@ -646,7 +646,7 @@ const CompanyModulePage = () => {
     if (isEditingCourseDetails) return;
     try {
       const token = localStorage.getItem("accessToken");
-      await axios.put(`http://localhost:5001/contents/${contentId}`, updatedData, {
+      await axios.put(`${API_URL}/contents/${contentId}`, updatedData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Lesson updated successfully!");
@@ -662,7 +662,7 @@ const CompanyModulePage = () => {
     if (window.confirm("Are you sure you want to delete this lesson? This will also delete any associated MCQs.")) {
       try {
         const token = localStorage.getItem("accessToken");
-        await axios.delete(`http://localhost:5001/contents/${contentId}`, {
+        await axios.delete(`${API_URL}/contents/${contentId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         toast.success("Lesson deleted successfully!");
@@ -691,7 +691,7 @@ const CompanyModulePage = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios.post(
-        `http://localhost:5001/courses/${courseId}/contents`,
+        `${API_URL}/courses/${courseId}/contents`,
         newLessonDataArray,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -793,13 +793,14 @@ const CompanyModulePage = () => {
 
 
   const toggleExamDropdown = () => setIsExamDropdownOpen(!isExamDropdownOpen);
-  const toggleFluencyTest = () => setIsFluencyTestOpen(!isFluencyTestOpen);
+  const toggleFluencyTest = () => setIsFluencyTestOpen(!isFluencyTestOpen); // <<< This toggles the fluency test component's visibility
+  
   const handleDeleteCourseSection = async (section) => {
       if (section === "course") {
           if (window.confirm("Are you sure you want to delete this entire course? This action cannot be undone.")) {
               try {
                   const token = localStorage.getItem("accessToken");
-                  await axios.delete(`http://localhost:5001/courses/${courseId}`, { headers: { Authorization: `Bearer ${token}` } });
+                  await axios.delete(`${API_URL}/courses/${courseId}`, { headers: { Authorization: `Bearer ${token}` } });
                   toast.success("Course deleted successfully.");
                   navigate("/company/dashboard");
               } catch (error) {
@@ -860,7 +861,7 @@ const CompanyModulePage = () => {
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{course.course_name || "Course Name Missing"}</h1>
               )}
               <div className="flex items-center text-sm text-gray-600">
-                <img src={course.company_image ? `http://localhost:5001${course.company_image}` : sysco} alt={course.company_name} className="w-6 h-6 rounded-full mr-2"/>
+                <img src={course.company_image ? `${API_URL}${course.company_image}` : sysco} alt={course.company_name} className="w-6 h-6 rounded-full mr-2"/>
                 <span>{course.company_name || "Company"}</span>
               </div>
               {isEditingCourseDetails ? (
@@ -1056,13 +1057,16 @@ const CompanyModulePage = () => {
            <h2 className="text-xl font-bold text-gray-800 mb-4">Exam</h2>
            <div className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer" onClick={toggleExamDropdown}>
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4"></div>
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                 {/* You can put an icon here if you want, e.g., <FaClipboardList className="text-blue-800 text-xl" /> */}
+              </div>
               <div><h3 className="text-sm text-gray-800 font-medium">Manage Exams</h3></div>
             </div>
             <FaCaretDown className={`text-blue-500 mr-2 transition-transform duration-200 ${isExamDropdownOpen ? 'transform rotate-180' : ''}`} />
           </div>
           {isExamDropdownOpen && (
             <div className="mt-4 p-4 bg-gray-50 rounded-lg shadow-sm">
+              {/* Fluency Test Item */}
               <div className="flex items-center justify-between p-4 mb-2 bg-white rounded-lg shadow-sm cursor-pointer hover:bg-gray-100" onClick={toggleFluencyTest}>
                 <div className="flex items-center">
                   <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4"><span className="text-blue-800 font-semibold">1</span></div>
@@ -1070,27 +1074,40 @@ const CompanyModulePage = () => {
                 </div>
                 <FaCaretDown className={`text-blue-500 transition-transform duration-200 ${isFluencyTestOpen ? 'transform rotate-180' : ''}`} />
               </div>
-              {isFluencyTestOpen && <div className="mt-4 p-4 border-t border-gray-200"><CompanyEnglishFluencyTest courseId={courseId} /></div>}
+              {/* Conditionally render CompanyEnglishFluencyTest */}
+              {isFluencyTestOpen && (
+                <div className="mt-4 p-4 border-t border-gray-200">
+                  <CompanyEnglishFluencyTest courseId={courseId} />
+                </div>
+              )}
+              {/* MCQ / Essay Exams Item */}
               <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:bg-gray-100 mt-2" onClick={() => navigate(`/exams/${courseId}`)}>
                 <div className="flex items-center">
                   <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4"><span className="text-blue-800 font-semibold">2</span></div>
                   <div><h3 className="text-sm text-gray-800">MCQ / Essay Exams</h3></div>
                 </div>
-                <FaCaretDown className="text-blue-500" />
+                <FaCaretDown className="text-blue-500" /> {/* This could also be a right arrow or no arrow */}
               </div>
             </div>
           )}
         </section>
+
+        {/* Certificate Section */}
         <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative">
           <h2 className="text-xl font-bold text-gray-800 mb-4">Claim Your Course Certificate</h2>
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg shadow-sm">
             <div className="flex items-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4"></div>
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                {/* Icon for certificate, e.g., <FaCertificate className="text-blue-800 text-xl" /> */}
+              </div>
               <div><h3 className="text-sm text-gray-800 font-medium">Certificate</h3><p className="text-xs text-gray-500">Details about certificate generation</p></div>
             </div>
             <FaCaretDown className="text-blue-500 mr-2" />
           </div>
+          {/* Potentially add dropdown content here if this section is expandable */}
         </section>
+
+        {/* Job Application Insights Section */}
         <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative">
           <h2 className="text-xl font-bold text-gray-800 mb-4">Job Application Insights (For Students)</h2>
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer">
@@ -1100,6 +1117,7 @@ const CompanyModulePage = () => {
             </div>
             <FaCaretDown className="text-blue-500 mr-2" />
           </div>
+          {/* Potentially add dropdown content here if this section is expandable */}
         </section>
       </main>
       <Footer />
