@@ -29,8 +29,11 @@ const AuthCard = () => {
       try {
         const decodedToken = jwtDecode(accessToken);
         console.log("Decoded JWT:", decodedToken); // Log decoded JWT for inspection!
-        const userRole = decodedToken.role;
-
+        const userRole = decodedToken.role; // Access 'role' claim - assuming backend adds it as 'role'
+        //-------------------------
+        const companyNameFromToken = decodedToken.company_name; // Extract company_name
+        const userEmailFromToken = decodedToken.sub; // Extract user email (subject)
+        //-------------------------
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("decodedJWT", JSON.stringify(decodedToken)); // Store decoded JWT as string
 
@@ -55,7 +58,16 @@ const AuthCard = () => {
 
         if (userRole === "student") {
           navigate("/Home");
-        } else if (userRole === "company") {
+        // } else if (userRole === "company") {
+        //   navigate("/CompanyDashboard");
+         } else if (userRole === "company") {
+          if (companyNameFromToken) {
+            localStorage.setItem("companyName", companyNameFromToken); // Store company_name
+            console.log("Company name stored:", companyNameFromToken);
+          } else {
+            console.warn("Company role but company_name not found in JWT for user:", userEmailFromToken);
+            // Handle this case: maybe show an error, or proceed without companyName if dashboard can handle it
+          }
           navigate("/CompanyDashboard");
         } else {
           console.warn("Unknown user role:", userRole);

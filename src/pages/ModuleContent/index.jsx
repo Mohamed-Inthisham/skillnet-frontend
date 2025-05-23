@@ -263,6 +263,363 @@
 
 
 // ModuleContent.js
+// import React, { useState, useEffect } from 'react';
+// import UserHeader from "../../layout/UserHeader";
+// import Footer from "../../layout/Footer";
+// import { useParams, useNavigate, useLocation } from 'react-router-dom';
+// import axios from 'axios';
+// import { FaSpinner } from 'react-icons/fa';
+
+// // Helper component for rendering video
+// const VideoPlayer = ({ videoLink }) => {
+//   const getEmbedUrl = (url) => {
+//     if (!url || typeof url !== 'string') return null;
+//     try {
+//       const videoUrl = new URL(url);
+//       if (videoUrl.hostname.includes('youtube.com') || videoUrl.hostname.includes('youtu.be')) {
+//         let videoId;
+//         if (videoUrl.hostname === 'youtu.be') {
+//           videoId = videoUrl.pathname.slice(1);
+//         } else {
+//           videoId = videoUrl.searchParams.get('v');
+//         }
+//         if (videoId) {
+//           return `https://www.youtube.com/embed/${videoId}`;
+//         }
+//       }
+//       if (videoUrl.hostname === 'vimeo.com') {
+//         const pathParts = videoUrl.pathname.split('/');
+//         const videoId = pathParts[pathParts.length -1];
+//         if (videoId && /^\d+$/.test(videoId)) {
+//           return `https://player.vimeo.com/video/${videoId}`;
+//         }
+//       }
+//       if (/\.(mp4|webm|ogg)$/i.test(videoUrl.pathname)) {
+//         return url;
+//       }
+//     } catch (e) {
+//       console.warn("Error parsing video URL:", e, "URL:", url);
+//       if (url.startsWith('/') || (!url.startsWith('http') && /\.(mp4|webm|ogg)$/i.test(url))) {
+//           return url;
+//       }
+//       return null;
+//     }
+//     if (/\.(mp4|webm|ogg)$/i.test(url)) {
+//         return url;
+//     }
+//     return null; 
+//   };
+
+//   const embedUrl = getEmbedUrl(videoLink);
+
+//   if (!videoLink) {
+//     return <div className="w-full h-64 sm:h-80 md:h-96 bg-gray-800 flex justify-center items-center text-white rounded-lg text-center p-4">No video link provided for this lesson.</div>;
+//   }
+
+//   if (!embedUrl) {
+//     return <div className="w-full h-64 sm:h-80 md:h-96 bg-gray-800 flex justify-center items-center text-white rounded-lg text-center p-4">Could not display video. Invalid or unsupported video link: <span className="text-xs ml-2 break-all block mt-2">{videoLink}</span></div>;
+//   }
+
+//   // For iframe (YouTube, Vimeo)
+//   if (!/\.(mp4|webm|ogg)$/i.test(embedUrl)) {
+//     return (
+//       // This div controls the aspect ratio and max height
+//       <div className="relative w-full bg-black rounded-lg overflow-hidden" style={{ paddingTop: '56.25%' /* 16:9 Aspect Ratio */, maxHeight: '70vh' }}> 
+//         <iframe
+//           className="absolute top-0 left-0 w-full h-full"
+//           src={embedUrl}
+//           title="Lesson Video"
+//           frameBorder="0"
+//           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+//           allowFullScreen
+//         ></iframe>
+//       </div>
+//     );
+//   }
+
+//   // For HTML5 <video> tag
+//   return (
+//     <div className="w-full mx-auto bg-black rounded-lg overflow-hidden">
+//       <video 
+//         controls 
+//         src={embedUrl} 
+//         className="w-full h-auto block" // 'block' to remove extra space below video
+//         style={{ maxHeight: '70vh', aspectRatio: '16/9', objectFit: 'contain' }}
+//       >
+//         Your browser does not support the video tag.
+//       </video>
+//     </div>
+//   );
+// };
+
+
+// const ModuleContent = () => {
+//     const [selectedOption, setSelectedOption] = useState(null);
+//     const [content, setContent] = useState(null);
+//     const [loadingContent, setLoadingContent] = useState(true);
+//     const [errorContent, setErrorContent] = useState(null);
+//     const [mcqData, setMcqData] = useState(null);
+//     const [loadingMcq, setLoadingMcq] = useState(true);
+//     const [errorMcq, setErrorMcq] = useState(null);
+//     const [answerFeedback, setAnswerFeedback] = useState('');
+//     const [isAnswerCorrect, setIsAnswerCorrect] = useState(false);
+//     const { contentId } = useParams();
+//     const location = useLocation();
+//     const navigate = useNavigate();
+//     const contents = location.state?.contents || [];
+//     const courseIdFromState = location.state?.courseId;
+
+//     useEffect(() => {
+//         const fetchContentData = async () => {
+//             setLoadingContent(true);
+//             setErrorContent(null);
+//             setSelectedOption(null);
+//             setAnswerFeedback('');
+//             setIsAnswerCorrect(false);
+//             setMcqData(null);
+//             try {
+//                 const response = await axios.get(`http://localhost:5001/contents/${contentId}`);
+//                 setContent(response.data);
+//                 setLoadingContent(false);
+//             } catch (err) {
+//                 setErrorContent(err);
+//                 setLoadingContent(false);
+//                 console.error("Error fetching content data:", err);
+//             }
+//         };
+
+//         if (contentId) {
+//             fetchContentData();
+//         }
+//     }, [contentId]);
+
+//     useEffect(() => {
+//         const fetchMcqData = async () => {
+//             if (content && content._id) {
+//                 setLoadingMcq(true);
+//                 setErrorMcq(null);
+//                 try {
+//                     const response = await axios.get(`http://localhost:5001/contents/${content._id}/mcqs`);
+//                     if (response.data && response.data.length > 0) {
+//                         setMcqData(response.data[0]);
+//                     } else {
+//                         setMcqData(null);
+//                     }
+//                     setLoadingMcq(false);
+//                 } catch (err) {
+//                     setErrorMcq(err);
+//                     setLoadingMcq(false);
+//                     console.error("Error fetching MCQ data:", err);
+//                 }
+//             } else {
+//                 setMcqData(null);
+//                 setLoadingMcq(false);
+//             }
+//         };
+//         fetchMcqData();
+//     }, [content]);
+
+//     const handleOptionSelect = (optionIndex) => {
+//         setSelectedOption(optionIndex);
+//         setAnswerFeedback('');
+//         setIsAnswerCorrect(false);
+//     };
+
+//     const checkAnswer = async () => {
+//         if (selectedOption === null) {
+//             alert("Please select an answer before checking.");
+//             return;
+//         }
+
+//         if (mcqData && mcqData._id) {
+//             try {
+//                 const studentAnswer = mcqData.options[selectedOption];
+//                 const response = await axios.post(`http://localhost:5001/mcqs/${mcqData._id}/checkAnswer`, {
+//                     student_answer: studentAnswer
+//                 });
+
+//                 if (response.data.is_correct) {
+//                     setAnswerFeedback('Correct Answer!');
+//                     setIsAnswerCorrect(true);
+//                 } else {
+//                     setAnswerFeedback('Wrong Answer. Please try again.');
+//                     setIsAnswerCorrect(false);
+//                 }
+//             } catch (error) {
+//                 console.error("Error checking answer:", error);
+//                 setAnswerFeedback('Error checking answer. Please try again later.');
+//                 setIsAnswerCorrect(false);
+//             }
+//         } else {
+//             alert("MCQ data is not available to check the answer.");
+//             setIsAnswerCorrect(false);
+//         }
+//     };
+
+//     const currentContentIndex = contents.findIndex(c => c._id === contentId);
+//     const previousContentId = currentContentIndex > 0 ? contents[currentContentIndex - 1]._id : null;
+//     const nextContentId = currentContentIndex < contents.length - 1 ? contents[currentContentIndex + 1]._id : null;
+//     const isLastContent = nextContentId === null;
+
+//     const goToPreviousContent = (e) => {
+//         e.preventDefault();
+//         if (previousContentId) {
+//             navigate(`/module-content/${previousContentId}`, { state: { contents, courseId: courseIdFromState } });
+//         }
+//     };
+
+//     const goToNextContent = (e) => {
+//         e.preventDefault();
+//         if (isLastContent) {
+//             if (isAnswerCorrect || !mcqData) {
+//                 navigate(`/module/${courseIdFromState}`);
+//             } else {
+//                 alert("Please answer the question correctly to proceed.");
+//             }
+//         } else if (nextContentId) {
+//             if (isAnswerCorrect || !mcqData) {
+//                  navigate(`/module-content/${nextContentId}`, { state: { contents, courseId: courseIdFromState } });
+//             } else {
+//                 alert("Please answer the question correctly to proceed.");
+//             }
+//         }
+//     };
+
+//     if (loadingContent) {
+//         return <div className="flex justify-center items-center min-h-screen">
+//             <FaSpinner className="animate-spin text-blue-500 text-4xl" />
+//         </div>;
+//     }
+
+//     if (errorContent) {
+//         return <div className="flex justify-center items-center min-h-screen">Error fetching content: {errorContent.message}</div>;
+//     }
+
+//     if (!content) {
+//         return <div className="flex justify-center items-center min-h-screen">Content not found.</div>;
+//     }
+
+//     const correctAnswerIndex = mcqData?.correct_answer && mcqData?.options ? 
+//                                mcqData.options.indexOf(mcqData.correct_answer) : -1;
+    
+//     return (
+//         <div className="flex flex-col min-h-screen font-[Poppins]">
+//             <UserHeader />
+
+//             <main className="flex-grow p-4 sm:p-6 md:p-8 bg-gray-100">
+//                 <div className="container mx-auto max-w-4xl bg-white rounded-lg shadow-xl p-6 sm:p-8">
+//                     <h1 className="text-2xl sm:text-3xl font-semibold mb-6 text-gray-800">{content.lesson_name || "Lesson Title Missing"}</h1>
+
+//                     {/* Video Section - Wrapper ensures it takes full width available */}
+//                     <div className="mb-8 w-full"> {/* Added w-full here */}
+//                         <VideoPlayer videoLink={content.link} />
+//                     </div>
+
+//                     {/* Quiz Section */}
+//                     {loadingMcq ? (
+//                         <div className="border rounded-lg p-6 mb-6 flex justify-center items-center text-gray-600">
+//                             <FaSpinner className="animate-spin text-blue-500 text-2xl" />
+//                             <span className="ml-3">Loading Quiz...</span>
+//                         </div>
+//                     ) : errorMcq ? (
+//                         <div className="border border-red-300 bg-red-50 rounded-lg p-6 mb-6 text-red-700">
+//                             Error loading quiz: {errorMcq.message}. You can still proceed if there's a next lesson.
+//                         </div>
+//                     ) : mcqData ? (
+//                         <div className="border border-gray-300 rounded-lg p-6 mb-8 shadow-md">
+//                             <div className="mb-6">
+//                                 <h3 className="text-xl font-semibold mb-3 text-gray-700">Quiz:</h3>
+//                                 <p className="text-gray-700">{mcqData.question_text}</p>
+//                             </div>
+
+//                             <div className="mb-6">
+//                                 <h3 className="text-lg font-semibold mb-3 text-gray-700">Options:</h3>
+//                                 <div className="space-y-3">
+//                                     {mcqData.options.map((option, index) => (
+//                                         <div
+//                                             key={index}
+//                                             className={`
+//                                                 p-3 rounded-lg flex items-center cursor-pointer border-2 transition-all duration-150
+//                                                 ${selectedOption === index ? 
+//                                                     (isAnswerCorrect ? 'border-green-500 bg-green-50' : (answerFeedback ? 'border-red-500 bg-red-50' : 'border-blue-500 bg-blue-50')) 
+//                                                     : 'border-gray-300 bg-gray-50 hover:bg-gray-100'}
+//                                                 ${answerFeedback && correctAnswerIndex === index && 'border-green-500 bg-green-50'} 
+//                                             `}
+//                                             onClick={() => !answerFeedback && handleOptionSelect(index)}
+//                                         >
+//                                             <div className={`
+//                                                 w-5 h-5 rounded-full mr-3 flex items-center justify-center text-xs font-bold flex-shrink-0
+//                                                 ${selectedOption === index ? 
+//                                                     (isAnswerCorrect ? 'bg-green-500 text-white' : (answerFeedback ? 'bg-red-500 text-white' : 'bg-blue-500 text-white')) 
+//                                                     : 'border border-gray-400 text-gray-600'}
+//                                                 ${answerFeedback && correctAnswerIndex === index && 'bg-green-500 text-white'}
+//                                             `}>
+//                                                 {String.fromCharCode(65 + index)}
+//                                             </div>
+//                                             <span className="text-gray-800">{option}</span>
+//                                         </div>
+//                                     ))}
+//                                 </div>
+//                             </div>
+                            
+//                             {!answerFeedback && (
+//                                 <div className="flex justify-center mt-6">
+//                                     <button
+//                                         className="bg-blue-600 text-white px-8 py-2.5 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
+//                                         onClick={checkAnswer}
+//                                         disabled={selectedOption === null}
+//                                     >
+//                                         Check Answer
+//                                     </button>
+//                                 </div>
+//                             )}
+
+//                             {answerFeedback && (
+//                                 <p className={`mt-4 text-center font-semibold text-lg ${isAnswerCorrect ? 'text-green-600' : 'text-red-600'}`}>
+//                                     {answerFeedback}
+//                                 </p>
+//                             )}
+
+//                         </div>
+//                     ) : (
+//                         <div className="border border-gray-300 rounded-lg p-6 mb-8 text-gray-500 italic text-center">
+//                             No quiz available for this lesson.
+//                         </div>
+//                     )}
+
+//                     {/* Navigation Buttons */}
+//                     <div className="flex justify-between mt-8">
+//                         <button 
+//                             onClick={goToPreviousContent} 
+//                             disabled={!previousContentId} 
+//                             className={`
+//                                 border border-gray-400 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-100 transition-colors
+//                                 ${!previousContentId ? 'opacity-50 cursor-not-allowed' : ''}
+//                             `}
+//                         >
+//                             Previous
+//                         </button>
+//                         <button
+//                             onClick={goToNextContent}
+//                             disabled={mcqData && !isAnswerCorrect}
+//                             className={`
+//                                 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors
+//                                 ${(mcqData && !isAnswerCorrect) ? 'opacity-50 cursor-not-allowed' : ''}
+//                             `}
+//                         >
+//                             {isLastContent ? 'Finish Course' : 'Next Lesson'}
+//                         </button>
+//                     </div>
+//                 </div>
+//             </main>
+//             <Footer />
+//         </div>
+//     );
+// };
+
+// export default ModuleContent;
+
+
 import React, { useState, useEffect } from 'react';
 import UserHeader from "../../layout/UserHeader";
 import Footer from "../../layout/Footer";
@@ -270,7 +627,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { FaSpinner } from 'react-icons/fa';
 
-// Helper component for rendering video
+// Helper component for rendering video (NO CHANGES HERE)
 const VideoPlayer = ({ videoLink }) => {
   const getEmbedUrl = (url) => {
     if (!url || typeof url !== 'string') return null;
@@ -307,7 +664,7 @@ const VideoPlayer = ({ videoLink }) => {
     if (/\.(mp4|webm|ogg)$/i.test(url)) {
         return url;
     }
-    return null; 
+    return null;
   };
 
   const embedUrl = getEmbedUrl(videoLink);
@@ -320,11 +677,9 @@ const VideoPlayer = ({ videoLink }) => {
     return <div className="w-full h-64 sm:h-80 md:h-96 bg-gray-800 flex justify-center items-center text-white rounded-lg text-center p-4">Could not display video. Invalid or unsupported video link: <span className="text-xs ml-2 break-all block mt-2">{videoLink}</span></div>;
   }
 
-  // For iframe (YouTube, Vimeo)
   if (!/\.(mp4|webm|ogg)$/i.test(embedUrl)) {
     return (
-      // This div controls the aspect ratio and max height
-      <div className="relative w-full bg-black rounded-lg overflow-hidden" style={{ paddingTop: '56.25%' /* 16:9 Aspect Ratio */, maxHeight: '70vh' }}> 
+      <div className="relative w-full bg-black rounded-lg overflow-hidden" style={{ paddingTop: '56.25%', maxHeight: '70vh' }}>
         <iframe
           className="absolute top-0 left-0 w-full h-full"
           src={embedUrl}
@@ -337,13 +692,12 @@ const VideoPlayer = ({ videoLink }) => {
     );
   }
 
-  // For HTML5 <video> tag
   return (
     <div className="w-full mx-auto bg-black rounded-lg overflow-hidden">
-      <video 
-        controls 
-        src={embedUrl} 
-        className="w-full h-auto block" // 'block' to remove extra space below video
+      <video
+        controls
+        src={embedUrl}
+        className="w-full h-auto block"
         style={{ maxHeight: '70vh', aspectRatio: '16/9', objectFit: 'contain' }}
       >
         Your browser does not support the video tag.
@@ -376,17 +730,18 @@ const ModuleContent = () => {
             setSelectedOption(null);
             setAnswerFeedback('');
             setIsAnswerCorrect(false);
-            setMcqData(null);
+            setMcqData(null); // Reset MCQ data as well
             try {
                 const response = await axios.get(`http://localhost:5001/contents/${contentId}`);
                 setContent(response.data);
                 console.log("Fetched Content Data:", response.data); // Debugging line
-                setLoadingContent(false);
+                // setLoadingContent(false); // Moved down
             } catch (err) {
                 setErrorContent(err);
-                setLoadingContent(false);
+                // setLoadingContent(false); // Moved down
                 console.error("Error fetching content data:", err);
             }
+            setLoadingContent(false); // Set loading to false after try-catch
         };
 
         if (contentId) {
@@ -404,26 +759,29 @@ const ModuleContent = () => {
                     if (response.data && response.data.length > 0) {
                         setMcqData(response.data[0]);
                     } else {
-                        setMcqData(null);
+                        setMcqData(null); // Explicitly set to null if no MCQs
                     }
-                    setLoadingMcq(false);
+                    // setLoadingMcq(false); // Moved down
                 } catch (err) {
                     setErrorMcq(err);
-                    setLoadingMcq(false);
+                    // setLoadingMcq(false); // Moved down
                     console.error("Error fetching MCQ data:", err);
                 }
+                setLoadingMcq(false); // Set loading to false after try-catch
             } else {
-                setMcqData(null);
+                setMcqData(null); // Ensure mcqData is null if no content or content._id
                 setLoadingMcq(false);
             }
         };
         fetchMcqData();
-    }, [content]);
+    }, [content]); // Depends on content, which is fetched based on contentId
 
     const handleOptionSelect = (optionIndex) => {
         setSelectedOption(optionIndex);
-        setAnswerFeedback('');
-        setIsAnswerCorrect(false);
+        // Do not reset feedback here if an answer has already been checked and was wrong.
+        // Only reset if the user is changing selection *before* checking.
+        // This is handled by the `!answerFeedback` condition on the option's onClick.
+        // If we are in "Try Again" mode, answerFeedback would be empty.
     };
 
     const checkAnswer = async () => {
@@ -457,6 +815,13 @@ const ModuleContent = () => {
         }
     };
 
+    // NEW: Handler for the "Try Again" button
+    const handleTryAgain = () => {
+        setSelectedOption(null);
+        setAnswerFeedback('');
+        // isAnswerCorrect is already false, so no need to set it again
+    };
+
     const currentContentIndex = contents.findIndex(c => c._id === contentId);
     const previousContentId = currentContentIndex > 0 ? contents[currentContentIndex - 1]._id : null;
     const nextContentId = currentContentIndex < contents.length - 1 ? contents[currentContentIndex + 1]._id : null;
@@ -472,13 +837,13 @@ const ModuleContent = () => {
     const goToNextContent = (e) => {
         e.preventDefault();
         if (isLastContent) {
-            if (isAnswerCorrect || !mcqData) {
+            if (isAnswerCorrect || !mcqData) { // Allow proceeding if correct OR no MCQ
                 navigate(`/module/${courseIdFromState}`);
             } else {
                 alert("Please answer the question correctly to proceed.");
             }
         } else if (nextContentId) {
-            if (isAnswerCorrect || !mcqData) {
+            if (isAnswerCorrect || !mcqData) { // Allow proceeding if correct OR no MCQ
                  navigate(`/module-content/${nextContentId}`, { state: { contents, courseId: courseIdFromState } });
             } else {
                 alert("Please answer the question correctly to proceed.");
@@ -500,9 +865,9 @@ const ModuleContent = () => {
         return <div className="flex justify-center items-center min-h-screen">Content not found.</div>;
     }
 
-    const correctAnswerIndex = mcqData?.correct_answer && mcqData?.options ? 
+    const correctAnswerIndex = mcqData?.correct_answer && mcqData?.options ?
                                mcqData.options.indexOf(mcqData.correct_answer) : -1;
-    
+
     return (
         <div className="flex flex-col min-h-screen font-[Poppins]">
             <UserHeader />
@@ -511,12 +876,10 @@ const ModuleContent = () => {
                 <div className="container mx-auto max-w-4xl bg-white rounded-lg shadow-xl p-6 sm:p-8">
                     <h1 className="text-2xl sm:text-3xl font-semibold mb-6 text-gray-800">{content.lesson_name || "Lesson Title Missing"}</h1>
 
-                    {/* Video Section - Wrapper ensures it takes full width available */}
-                    <div className="mb-8 w-full"> {/* Added w-full here */}
+                    <div className="mb-8 w-full">
                         <VideoPlayer videoLink={content.link} />
                     </div>
 
-                    {/* Quiz Section */}
                     {loadingMcq ? (
                         <div className="border rounded-lg p-6 mb-6 flex justify-center items-center text-gray-600">
                             <FaSpinner className="animate-spin text-blue-500 text-2xl" />
@@ -540,20 +903,26 @@ const ModuleContent = () => {
                                         <div
                                             key={index}
                                             className={`
-                                                p-3 rounded-lg flex items-center cursor-pointer border-2 transition-all duration-150
-                                                ${selectedOption === index ? 
-                                                    (isAnswerCorrect ? 'border-green-500 bg-green-50' : (answerFeedback ? 'border-red-500 bg-red-50' : 'border-blue-500 bg-blue-50')) 
+                                                p-3 rounded-lg flex items-center border-2 transition-all duration-150
+                                                ${selectedOption === index ?
+                                                    (isAnswerCorrect ? 'border-green-500 bg-green-50' : (answerFeedback ? 'border-red-500 bg-red-50' : 'border-blue-500 bg-blue-50'))
                                                     : 'border-gray-300 bg-gray-50 hover:bg-gray-100'}
-                                                ${answerFeedback && correctAnswerIndex === index && 'border-green-500 bg-green-50'} 
+                                                ${answerFeedback && isAnswerCorrect && correctAnswerIndex === index && 'border-green-500 bg-green-50'}
+                                                ${answerFeedback && !isAnswerCorrect && selectedOption === index ? 'cursor-default' : 'cursor-pointer'}
                                             `}
-                                            onClick={() => !answerFeedback && handleOptionSelect(index)}
+                                            onClick={() => {
+                                                // Allow selection only if no feedback has been given OR if feedback was wrong (but Try Again resets feedback)
+                                                if (!answerFeedback) {
+                                                    handleOptionSelect(index);
+                                                }
+                                            }}
                                         >
                                             <div className={`
                                                 w-5 h-5 rounded-full mr-3 flex items-center justify-center text-xs font-bold flex-shrink-0
-                                                ${selectedOption === index ? 
-                                                    (isAnswerCorrect ? 'bg-green-500 text-white' : (answerFeedback ? 'bg-red-500 text-white' : 'bg-blue-500 text-white')) 
+                                                ${selectedOption === index ?
+                                                    (isAnswerCorrect ? 'bg-green-500 text-white' : (answerFeedback ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'))
                                                     : 'border border-gray-400 text-gray-600'}
-                                                ${answerFeedback && correctAnswerIndex === index && 'bg-green-500 text-white'}
+                                                ${answerFeedback && isAnswerCorrect && correctAnswerIndex === index && 'bg-green-500 text-white'}
                                             `}>
                                                 {String.fromCharCode(65 + index)}
                                             </div>
@@ -562,9 +931,10 @@ const ModuleContent = () => {
                                     ))}
                                 </div>
                             </div>
-                            
-                            {!answerFeedback && (
-                                <div className="flex justify-center mt-6">
+
+                            {/* MODIFIED: Button display logic */}
+                            <div className="flex justify-center mt-6">
+                                {!answerFeedback && (
                                     <button
                                         className="bg-blue-600 text-white px-8 py-2.5 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors"
                                         onClick={checkAnswer}
@@ -572,8 +942,16 @@ const ModuleContent = () => {
                                     >
                                         Check Answer
                                     </button>
-                                </div>
-                            )}
+                                )}
+                                {answerFeedback && !isAnswerCorrect && (
+                                    <button
+                                        className="bg-orange-500 text-white px-8 py-2.5 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50 transition-colors"
+                                        onClick={handleTryAgain}
+                                    >
+                                        Try Again
+                                    </button>
+                                )}
+                            </div>
 
                             {answerFeedback && (
                                 <p className={`mt-4 text-center font-semibold text-lg ${isAnswerCorrect ? 'text-green-600' : 'text-red-600'}`}>
@@ -588,11 +966,10 @@ const ModuleContent = () => {
                         </div>
                     )}
 
-                    {/* Navigation Buttons */}
                     <div className="flex justify-between mt-8">
-                        <button 
-                            onClick={goToPreviousContent} 
-                            disabled={!previousContentId} 
+                        <button
+                            onClick={goToPreviousContent}
+                            disabled={!previousContentId}
                             className={`
                                 border border-gray-400 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-100 transition-colors
                                 ${!previousContentId ? 'opacity-50 cursor-not-allowed' : ''}
@@ -602,7 +979,7 @@ const ModuleContent = () => {
                         </button>
                         <button
                             onClick={goToNextContent}
-                            disabled={mcqData && !isAnswerCorrect}
+                            disabled={mcqData && !isAnswerCorrect} // Condition remains: must be correct if MCQ exists
                             className={`
                                 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors
                                 ${(mcqData && !isAnswerCorrect) ? 'opacity-50 cursor-not-allowed' : ''}

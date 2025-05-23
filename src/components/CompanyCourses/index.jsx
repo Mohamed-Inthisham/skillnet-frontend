@@ -408,7 +408,7 @@ const CompanyCourses = () => {
           <div>
             <button
               type="button"
-              className="inline-flex justify-center w-full rounded-md border border-blue-500 shadow-sm px-4 py-2 bg-blue text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 items-center"
+              className="inline-flex justify-center w-full rounded-md border border-blue-500 shadow-sm px-4 py-2 bg-blue-500 text-sm font-medium text-gray-100 hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-100 focus:ring-blue-500 items-center"
               id="add-menu-button"
               aria-expanded={isAddMenuOpen}
               aria-haspopup="true"

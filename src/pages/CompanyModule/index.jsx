@@ -504,6 +504,7 @@ const CompanyModulePage = () => {
   const [isSavingEssayQuestion, setIsSavingEssayQuestion] = useState(false);
 
 
+  //const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
   const fetchCourseDataAndContents = async (showLoading = true) => {
     // ... (your existing fetchCourseDataAndContents code)
     if(showLoading) setLoading(true);
