@@ -421,7 +421,7 @@ import ModuleContentEditForm from "../../components/ModuleContentEditForm";
 import AddNewLessonForm from "../../components/AddNewLessonForm";
 import CompanyEnglishFluencyTest from "../../components/CompanyEnglishFluencyTestForm";
 import McqForm from "../../components/McqForm";
-import CompanyEssayQuestionForm from "../../components/CompanyEssayQuestionForm"; // <-- IMPORT NEW COMPONENT
+import CompanyEssayQuestionForm from "../../components/CompanyEssayQuestionForm";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -483,7 +483,7 @@ const CompanyModulePage = () => {
   const [openLessonIndex, setOpenLessonIndex] = useState(null);
   const [isExamDropdownOpen, setIsExamDropdownOpen] = useState(false);
   const [isFluencyTestOpen, setIsFluencyTestOpen] = useState(false);
-  const [isMcqEssayExamsOpen, setIsMcqEssayExamsOpen] = useState(false); // <-- NEW STATE
+  const [isMcqEssayExamsOpen, setIsMcqEssayExamsOpen] = useState(false); 
 
   const { courseId } = useParams();
   const navigate = useNavigate();
@@ -495,7 +495,7 @@ const CompanyModulePage = () => {
   const [editingMcqData, setEditingMcqData] = useState(null);
   const [isSavingMcq, setIsSavingMcq] = useState(false);
 
-  // Essay Question States <-- NEW STATES
+  // Essay Question States
   const [essayQuestions, setEssayQuestions] = useState([]);
   const [isLoadingEssayQuestions, setIsLoadingEssayQuestions] = useState(false);
   const [errorEssayQuestions, setErrorEssayQuestions] = useState(null);
@@ -504,9 +504,7 @@ const CompanyModulePage = () => {
   const [isSavingEssayQuestion, setIsSavingEssayQuestion] = useState(false);
 
 
-  //const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
   const fetchCourseDataAndContents = async (showLoading = true) => {
-    // ... (your existing fetchCourseDataAndContents code)
     if(showLoading) setLoading(true);
     setError(null);
     try {
@@ -527,6 +525,14 @@ const CompanyModulePage = () => {
       setEditingMcqData(null);
       setEditingLessonContentId(null);
 
+      // Reset essay question states as well, or fetch them if needed on course load
+      setEssayQuestions([]); // Assuming they are fetched when the section is opened
+      setIsLoadingEssayQuestions(false);
+      setErrorEssayQuestions(null);
+      setShowEssayQuestionForm(false);
+      setEditingEssayQuestionData(null);
+
+
       if(showLoading) setLoading(false);
     } catch (err) {
       setError(err);
@@ -541,7 +547,6 @@ const CompanyModulePage = () => {
     }
   }, [courseId]);
 
-  // ... (handleEditCourseDetails, handleCourseFieldChange, handleImageFileChange, handleSaveCourseDetails, handleCancelEditCourseDetails - all remain same)
   const handleEditCourseDetails = () => {
     setIsEditingCourseDetails(true);
     setShowAddLessonForm(false);
@@ -549,6 +554,13 @@ const CompanyModulePage = () => {
     setOpenLessonIndex(null);
     setActiveMcqFormForContentId(null);
     setEditingMcqData(null);
+    // Close exam accordions and forms if open
+    setIsExamDropdownOpen(false);
+    setIsFluencyTestOpen(false);
+    setIsMcqEssayExamsOpen(false);
+    setShowEssayQuestionForm(false);
+    setEditingEssayQuestionData(null);
+
     setTempCourseData({
       course_name: course.course_name,
       introduction: course.introduction,
@@ -597,19 +609,12 @@ const CompanyModulePage = () => {
     }
   };
   const handleCancelEditCourseDetails = () => {
-    setCourse(prevCourse => ({
-        ...prevCourse,
-        course_name: tempCourseData.course_name,
-        introduction: tempCourseData.introduction,
-        level: tempCourseData.level,
-    }));
-    setCourseImagePreview(tempCourseData.course_image_url ? `${API_URL}${tempCourseData.course_image_url}` : javaModule);
-    setCourseImageFile(null);
+    // Refetch original course data or use tempCourseData to revert
+    fetchCourseDataAndContents(false); // Simplest way to ensure consistency
     setIsEditingCourseDetails(false);
   };
 
   const toggleDropdown = (index) => {
-    // ... (your existing toggleDropdown code)
     if (isEditingCourseDetails) return;
     const contentId = contents[index]._id;
     const isCurrentlyOpen = openLessonIndex === index;
@@ -630,7 +635,6 @@ const CompanyModulePage = () => {
     }
   };
 
-  // ... (Lesson content handlers: handleEditLessonDetails, handleCancelEditLessonDetails, handleSaveLessonDetails, handleDeleteContent, handleToggleAddLessonForm, handleAddNewLesson - all remain same)
   const handleEditLessonDetails = (contentItem, index) => { 
     if (isEditingCourseDetails) return;
     setEditingLessonContentId(contentItem._id); 
@@ -708,7 +712,6 @@ const CompanyModulePage = () => {
     }
   };
 
-  // --- MCQ Handlers --- (remain same)
   const fetchMcqsForContent = async (contentId, showSpinner = true) => {
     setContentMcqs(prev => new Map(prev).set(contentId, { data: prev.get(contentId)?.data || [], isLoading: showSpinner, error: null }));
     try {
@@ -780,10 +783,22 @@ const CompanyModulePage = () => {
     }
   };
 
-  const toggleExamDropdown = () => setIsExamDropdownOpen(!isExamDropdownOpen);
-  const toggleFluencyTest = () => setIsFluencyTestOpen(!isFluencyTestOpen);
+  const toggleExamDropdown = () => {
+    if(isEditingCourseDetails) return;
+    setIsExamDropdownOpen(!isExamDropdownOpen);
+    // if closing, also close sub-accordions
+    if (!isExamDropdownOpen === false) {
+        setIsFluencyTestOpen(false);
+        setIsMcqEssayExamsOpen(false);
+        setShowEssayQuestionForm(false);
+        setEditingEssayQuestionData(null);
+    }
+  }
+  const toggleFluencyTest = () => {
+    if(isEditingCourseDetails) return;
+    setIsFluencyTestOpen(!isFluencyTestOpen);
+  }
 
-  // --- Essay Question Handlers --- <-- NEW FUNCTIONS
   const fetchEssayQuestions = async (showLoadingSpinner = true) => {
     if (showLoadingSpinner) setIsLoadingEssayQuestions(true);
     setErrorEssayQuestions(null);
@@ -804,12 +819,15 @@ const CompanyModulePage = () => {
   };
 
   const toggleMcqEssayExams = () => {
+    if(isEditingCourseDetails) return;
     const newOpenState = !isMcqEssayExamsOpen;
     setIsMcqEssayExamsOpen(newOpenState);
+    // Fetch only if opening and no data/error/loading state exists for essay questions
     if (newOpenState && essayQuestions.length === 0 && !isLoadingEssayQuestions && !errorEssayQuestions) { 
       fetchEssayQuestions();
     }
-    if (!newOpenState) { // If closing the accordion
+    // If closing the accordion, also close the form
+    if (!newOpenState) { 
       setShowEssayQuestionForm(false);
       setEditingEssayQuestionData(null);
     }
@@ -880,7 +898,6 @@ const CompanyModulePage = () => {
   };
   
   const handleDeleteCourseSection = async (section) => {
-      // ... (your existing handleDeleteCourseSection code)
       if (section === "course") {
           if (window.confirm("Are you sure you want to delete this entire course? This action cannot be undone.")) {
               try {
@@ -905,7 +922,6 @@ const CompanyModulePage = () => {
       <main className="flex-1 py-10 px-4 sm:px-10 md:px-20 bg-gray-100">
         {/* Course Header & Details Section */}
         <section className="mb-10 bg-white p-6 sm:p-8 rounded-lg shadow-xl relative">
-           {/* ... (Your existing course header & details JSX, no changes needed here for this feature) ... */}
           <div className="absolute top-4 right-4 flex space-x-2 z-10">
             {isEditingCourseDetails ? (
               <>
@@ -971,7 +987,8 @@ const CompanyModulePage = () => {
               )}
               <div className="pt-2 text-sm text-gray-600 space-y-1">
                   <p><span className="font-medium">{contents.length}</span> Lessons</p>
-                  <p><span className="font-medium">{course.quiz_count || contents.length || 0}</span> Quizzes</p>
+                  {/* Update quiz count to reflect actual MCQs + Essay questions if needed, or keep as is */}
+                  <p><span className="font-medium">{course.quiz_count || contents.reduce((acc, curr) => acc + (contentMcqs.get(curr._id)?.data?.length || 0), 0) + essayQuestions.length || 0}</span> Quizzes/Exams</p>
                   <p><span className="font-medium">{course.exam_duration || "N/A"}</span> Exam</p>
                   <p>Professional Certificate</p>
               </div>
@@ -989,7 +1006,6 @@ const CompanyModulePage = () => {
 
         {/* Lessons Section */}
         <section className="mb-10 bg-white p-6 sm:p-8 rounded-lg shadow-xl relative">
-           {/* ... (Your existing Lessons JSX, no changes needed here for this feature) ... */}
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-gray-800">Lessons</h2>
             {!isEditingCourseDetails && ( 
@@ -1056,70 +1072,77 @@ const CompanyModulePage = () => {
                           isSaving={isSavingMcq}
                         />
                       ) : ( 
-                        <>
-                          <VideoPlayer videoLink={content.link} />
-                          <p className="text-xs text-gray-600 mt-3"><strong>Original Link:</strong> <a href={content.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">{content.link}</a></p>
-                          <div className="mt-6 pt-4 border-t border-gray-200">
-                            <div className="flex justify-between items-center mb-3">
-                              <h4 className="text-md font-semibold text-gray-700">Lesson Quiz (MCQ)</h4>
-                                <button
-                                  onClick={() => showMcqFormForAdd(content._id)} 
-                                  className="bg-green-500 hover:bg-green-600 text-white text-xs font-semibold py-1 px-2.5 rounded-md shadow-sm flex items-center"
-                                  title="Add MCQ to this lesson"
-                                >
-                                  <FaPlus className="mr-1" size={10} /> Add MCQ
-                                </button>
-                            </div>
-                            {(() => {
-                                const mcqState = contentMcqs.get(content._id);
-                                if (!mcqState) {
-                                  return <div className="flex justify-center items-center p-3"><FaSpinner className="animate-spin text-blue-500" /> <span className="ml-2 text-sm text-gray-500">Loading quiz...</span></div>;
-                                }
-                                if (mcqState.isLoading && (!mcqState.data || mcqState.data.length === 0)) {
-                                  return <div className="flex justify-center items-center p-3"><FaSpinner className="animate-spin text-blue-500" /> <span className="ml-2 text-sm text-gray-500">Loading quiz...</span></div>;
-                                }
-                                if (mcqState.error) {
-                                  return <p className="text-red-500 text-xs p-2 bg-red-50 rounded">Error: {mcqState.error.response?.data?.msg || mcqState.error.message}</p>;
-                                }
-                                if (mcqState.data && mcqState.data.length > 0) {
-                                  return (
-                                    <div className="space-y-3 mt-2">
-                                      {mcqState.isLoading && <div className="text-xs text-blue-500 flex items-center mb-1"><FaSpinner className="animate-spin mr-1.5" /> Refreshing quiz...</div>}
-                                      {mcqState.data.map((mcq, mcqIndex) => (
-                                        <div key={mcq._id} className="p-3 border border-gray-200 rounded-md bg-gray-50 shadow-sm">
-                                          <div className="flex justify-between items-start mb-1">
-                                            <p className="text-sm font-medium text-gray-800 flex-grow break-words">
-                                              {mcqIndex + 1}. {mcq.question_text}
-                                            </p>
-                                            <div className="flex-shrink-0 flex space-x-2 ml-2">
-                                              <button onClick={() => showMcqFormForEdit(mcq, content._id)} title="Edit MCQ" className="text-blue-600 hover:text-blue-700 p-0.5">
-                                                <FaEdit size={14} />
-                                              </button>
-                                              <button onClick={() => handleDeleteMcq(mcq._id, content._id)} title="Delete MCQ" className="text-red-500 hover:text-red-600 p-0.5">
-                                                <FaTrash size={14} />
-                                              </button>
+                        (() => {
+                          const currentMcqState = contentMcqs.get(content._id);
+                          return (
+                            <>
+                              <VideoPlayer videoLink={content.link} />
+                              <p className="text-xs text-gray-600 mt-3"><strong>Original Link:</strong> <a href={content.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">{content.link}</a></p>
+                              <div className="mt-6 pt-4 border-t border-gray-200">
+                                <div className="flex justify-between items-center mb-3">
+                                  <h4 className="text-md font-semibold text-gray-700">Lesson Quiz (MCQ)</h4>
+                                  {currentMcqState && currentMcqState.data && currentMcqState.data.length === 0 && !currentMcqState.isLoading && !currentMcqState.error && (
+                                    <button
+                                      onClick={() => showMcqFormForAdd(content._id)} 
+                                      className="bg-green-500 hover:bg-green-600 text-white text-xs font-semibold py-1 px-2.5 rounded-md shadow-sm flex items-center"
+                                      title="Add MCQ to this lesson"
+                                    >
+                                      <FaPlus className="mr-1" size={10} /> Add MCQ
+                                    </button>
+                                  )}
+                                </div>
+                                {(() => {
+                                    const mcqState = currentMcqState; 
+                                    if (!mcqState) {
+                                      return <div className="flex justify-center items-center p-3"><FaSpinner className="animate-spin text-blue-500" /> <span className="ml-2 text-sm text-gray-500">Loading quiz...</span></div>;
+                                    }
+                                    if (mcqState.isLoading && (!mcqState.data || mcqState.data.length === 0)) {
+                                      return <div className="flex justify-center items-center p-3"><FaSpinner className="animate-spin text-blue-500" /> <span className="ml-2 text-sm text-gray-500">Loading quiz...</span></div>;
+                                    }
+                                    if (mcqState.error) {
+                                      return <p className="text-red-500 text-xs p-2 bg-red-50 rounded">Error: {mcqState.error.response?.data?.msg || mcqState.error.message}</p>;
+                                    }
+                                    if (mcqState.data && mcqState.data.length > 0) {
+                                      return (
+                                        <div className="space-y-3 mt-2">
+                                          {mcqState.isLoading && <div className="text-xs text-blue-500 flex items-center mb-1"><FaSpinner className="animate-spin mr-1.5" /> Refreshing quiz...</div>}
+                                          {mcqState.data.map((mcq, mcqIndex) => (
+                                            <div key={mcq._id} className="p-3 border border-gray-200 rounded-md bg-gray-50 shadow-sm">
+                                              <div className="flex justify-between items-start mb-1">
+                                                <p className="text-sm font-medium text-gray-800 flex-grow break-words">
+                                                  {mcqIndex + 1}. {mcq.question_text}
+                                                </p>
+                                                <div className="flex-shrink-0 flex space-x-2 ml-2">
+                                                  <button onClick={() => showMcqFormForEdit(mcq, content._id)} title="Edit MCQ" className="text-blue-600 hover:text-blue-700 p-0.5">
+                                                    <FaEdit size={14} />
+                                                  </button>
+                                                  <button onClick={() => handleDeleteMcq(mcq._id, content._id)} title="Delete MCQ" className="text-red-500 hover:text-red-600 p-0.5">
+                                                    <FaTrash size={14} />
+                                                  </button>
+                                                </div>
+                                              </div>
+                                              <ul className="list-none mt-1.5 space-y-1 pl-4">
+                                                {mcq.options.map((option, optIndex) => (
+                                                  <li key={optIndex} className={`text-xs text-gray-600 ${String.fromCharCode(65 + optIndex) === mcq.correct_answer ? 'font-semibold text-green-700' : ''}`}>
+                                                    {String.fromCharCode(65 + optIndex)}. {option}
+                                                    {String.fromCharCode(65 + optIndex) === mcq.correct_answer && <span className="ml-1 text-green-600">(Correct)</span>}
+                                                  </li>
+                                                ))}
+                                              </ul>
                                             </div>
-                                          </div>
-                                          <ul className="list-none mt-1.5 space-y-1 pl-4">
-                                            {mcq.options.map((option, optIndex) => (
-                                              <li key={optIndex} className={`text-xs text-gray-600 ${String.fromCharCode(65 + optIndex) === mcq.correct_answer ? 'font-semibold text-green-700' : ''}`}>
-                                                {String.fromCharCode(65 + optIndex)}. {option}
-                                                {String.fromCharCode(65 + optIndex) === mcq.correct_answer && <span className="ml-1 text-green-600">(Correct)</span>}
-                                              </li>
-                                            ))}
-                                          </ul>
+                                          ))}
                                         </div>
-                                      ))}
-                                    </div>
-                                  );
-                                }
-                                if (mcqState.data && mcqState.data.length === 0) {
-                                  return <p className="text-sm text-gray-500 italic mt-2">No MCQs added to this lesson yet.</p>;
-                                }
-                                return null;
-                              })()}
-                          </div> 
-                        </>
+                                      );
+                                    }
+                                    if (mcqState.data && mcqState.data.length === 0) {
+                                      return <p className="text-sm text-gray-500 italic mt-2">No MCQs added to this lesson yet.</p>;
+                                    }
+                                    return null;
+                                  })()}
+                              </div> 
+                            </>
+                          );
+                        })()
                       )}
                     </div>
                   )}
@@ -1130,10 +1153,10 @@ const CompanyModulePage = () => {
           {isEditingCourseDetails && <p className="text-sm text-gray-500 italic text-center mt-4">Finish editing course details to manage lessons.</p>}
         </section>
 
-        {/* Exam Section - MODIFIED */}
+        {/* Exam Section */}
         <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative">
           <h2 className="text-xl font-bold text-gray-800 mb-4">Exam</h2>
-          <div className="flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer" onClick={toggleExamDropdown}>
+          <div className={`flex items-center justify-between p-4 mb-4 bg-gray-50 rounded-lg shadow-sm ${isEditingCourseDetails ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`} onClick={toggleExamDropdown}>
             <div className="flex items-center">
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
                  {/* Icon can be FaClipboardList or similar */}
@@ -1142,7 +1165,7 @@ const CompanyModulePage = () => {
             </div>
             <FaCaretDown className={`text-purple-500 mr-2 transition-transform duration-200 ${isExamDropdownOpen ? 'transform rotate-180' : ''}`} />
           </div>
-          {isExamDropdownOpen && (
+          {isExamDropdownOpen && !isEditingCourseDetails && (
             <div className="mt-4 p-4 bg-gray-100 rounded-lg shadow-inner">
               {/* Fluency Test Item */}
               <div className="flex items-center justify-between p-4 mb-3 bg-white rounded-lg shadow-sm cursor-pointer hover:bg-gray-50" onClick={toggleFluencyTest}>
@@ -1158,7 +1181,7 @@ const CompanyModulePage = () => {
                 </div>
               )}
 
-              {/* MCQ / Essay Exams Item - MODIFIED */}
+              {/* Essay Questions Item */}
               <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm cursor-pointer hover:bg-gray-50" onClick={toggleMcqEssayExams}>
                 <div className="flex items-center">
                   <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3"><span className="text-green-800 font-semibold">2</span></div>
@@ -1172,10 +1195,10 @@ const CompanyModulePage = () => {
                 <div className="mt-0 p-4 bg-white rounded-b-lg shadow-sm border-t border-gray-200">
                   <div className="mb-4">
                     <h4 className="text-md font-semibold text-gray-700 mb-1">Essay Questions Management</h4>
-                
                   </div>
 
-                  {!showEssayQuestionForm && (
+                  {/* MODIFIED: Conditional Add Essay Question Button */}
+                  {!showEssayQuestionForm && essayQuestions.length === 0 && !isLoadingEssayQuestions && !errorEssayQuestions && (
                     <button
                       onClick={handleOpenAddEssayForm}
                       className="mb-4 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2 px-3.5 rounded-md shadow-sm flex items-center disabled:opacity-70"
@@ -1204,7 +1227,8 @@ const CompanyModulePage = () => {
                           <div key={eq._id} className="p-3.5 border border-gray-200 rounded-md bg-gray-50 shadow-sm">
                             <div className="flex justify-between items-start mb-1.5">
                               <p className="text-sm font-medium text-gray-800 flex-grow break-words pr-2">
-                                {index + 1}. {eq.question}
+                                {/* Removed index + 1 here as there's only one */}
+                                {eq.question} 
                               </p>
                               <div className="flex-shrink-0 flex space-x-2.5 ml-2">
                                 <button onClick={() => handleOpenEditEssayForm(eq)} title="Edit Essay Question" className="text-blue-600 hover:text-blue-700 p-0.5 disabled:opacity-50" disabled={isSavingEssayQuestion}>
@@ -1223,15 +1247,17 @@ const CompanyModulePage = () => {
                         ))}
                       </div>
                     ) : (
+                      // This message will show if no essay questions and the button is also shown (before adding the first one)
                       <p className="text-sm text-gray-500 italic py-3">No essay questions added for this course yet.</p>
                     )
                   )}
-                  
                 </div>
               )}
             </div>
           )}
+           {isEditingCourseDetails && <p className="text-sm text-gray-500 italic text-center mt-4">Finish editing course details to manage exam components.</p>}
         </section>
+    
 
         {/* Certificate Section */}
         {/* <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative"> */}
