@@ -3,7 +3,7 @@ import InputField from "../InputField";
 import Button from "../Button";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode"; // Correct named import!
+import { jwtDecode } from "jwt-decode";
 import LockIcon from "../../assets/pwIcon.webp";
 import UserIcon from "../../assets/userIcon.webp";
 
@@ -23,70 +23,73 @@ const AuthCard = () => {
         password: password,
       });
 
+      // --- DATA FROM LOGIN RESPONSE ---
       const accessToken = response.data.access_token;
-      console.log("Login successful, JWT received:", accessToken);
+      const userMongoDBId = response.data.userId; // <<< --- GET THE userId (MongoDB _id)
+      const userRole = response.data.role;
+      const userFirstname = response.data.firstname; // Get from response body
+      const userLastname = response.data.lastname;   // Get from response body
+      const companyNameFromResponse = response.data.company_name; // Get from response body
+      // You can also get username, profile_image_url etc. from response.data if needed directly
 
-      try {
-        const decodedToken = jwtDecode(accessToken);
-        console.log("Decoded JWT:", decodedToken); // Log decoded JWT for inspection!
-        const userRole = decodedToken.role; // Access 'role' claim - assuming backend adds it as 'role'
-        //-------------------------
-        const companyNameFromToken = decodedToken.company_name; // Extract company_name
-        const userEmailFromToken = decodedToken.sub; // Extract user email (subject)
-        //-------------------------
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("decodedJWT", JSON.stringify(decodedToken)); // Store decoded JWT as string
+      console.log("Login successful. Access Token:", accessToken);
+      console.log("User MongoDB ID from response:", userMongoDBId);
+      console.log("User Role from response:", userRole);
 
-        // --- Store username (firstname + lastname) ---
-        // Adjust these claim names based on your actual JWT payload from the backend
-        const userFirstname = decodedToken.firstname;
-        const userLastname = decodedToken.lastname;
+      if (!userMongoDBId) {
+        console.error("CRITICAL: userId (MongoDB _id) not found in login response!");
+        setLoginError("Login failed: User identification missing. Please contact support.");
+        return;
+      }
+      // --- END DATA FROM LOGIN RESPONSE ---
 
-        if (userFirstname && userLastname) {
-          const username = `${userFirstname} ${userLastname}`;
-          localStorage.setItem("username", username);
-          console.log("Username stored:", username);
+
+      // Storing token and crucial IDs
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("userId", userMongoDBId); // <<< --- STORE THE MONGODB _id
+      localStorage.setItem("userRole", userRole); // Store role if needed elsewhere
+
+      // Optional: Store decoded JWT if you need other claims not directly in response body
+      // const decodedToken = jwtDecode(accessToken);
+      // localStorage.setItem("decodedJWT", JSON.stringify(decodedToken));
+
+      // Store display username
+      if (userFirstname && userLastname) {
+        const displayName = `${userFirstname} ${userLastname}`;
+        localStorage.setItem("username", displayName); // For display purposes
+        console.log("Display username stored:", displayName);
+      } else if (response.data.username) { // Fallback to the generated username from response
+        localStorage.setItem("username", response.data.username);
+        console.log("Display username (fallback) stored:", response.data.username);
+      } else {
+        localStorage.setItem("username", email); // Last fallback
+        console.warn("Firstname/lastname not in response. Storing email as display username.");
+      }
+
+
+      if (userRole === "student") {
+        navigate("/Home");
+      } else if (userRole === "company") {
+        if (companyNameFromResponse) {
+          localStorage.setItem("companyName", companyNameFromResponse);
+          console.log("Company name stored:", companyNameFromResponse);
         } else {
-          // Fallback if firstname/lastname are not in the token
-          localStorage.setItem("username", decodedToken.identity || "User"); // Use email (identity) or a generic "User"
-          console.warn(
-            "Firstname or lastname not found in JWT claims. Storing identity/generic 'User' as username."
-          );
+          console.warn("Company role but company_name not found in login response for user:", email);
         }
-        // --- End store username ---
-
-
-        if (userRole === "student") {
-          navigate("/Home");
-        // } else if (userRole === "company") {
-        //   navigate("/CompanyDashboard");
-         } else if (userRole === "company") {
-          if (companyNameFromToken) {
-            localStorage.setItem("companyName", companyNameFromToken); // Store company_name
-            console.log("Company name stored:", companyNameFromToken);
-          } else {
-            console.warn("Company role but company_name not found in JWT for user:", userEmailFromToken);
-            // Handle this case: maybe show an error, or proceed without companyName if dashboard can handle it
-          }
-          navigate("/CompanyDashboard");
-        } else {
-          console.warn("Unknown user role:", userRole);
-          setLoginError(
-            "Login successful, but unknown user role. Redirecting to default."
-          );
-          navigate("/"); // Or a generic dashboard / default page
-        }
-      } catch (decodeError) {
-        console.error("Error decoding JWT:", decodeError);
-        setLoginError("Error processing login. Please try again.");
+        navigate("/CompanyDashboard");
+      } else {
+        console.warn("Unknown user role:", userRole);
+        setLoginError(
+          "Login successful, but unknown user role. Redirecting to default."
+        );
+        navigate("/");
       }
     } catch (error) {
       console.error("Login failed:", error);
-      // setLoginError("Invalid email or password."); // Generic message
       if (error.response && error.response.data && error.response.data.msg) {
-        setLoginError(error.response.data.msg); // Use backend message
+        setLoginError(error.response.data.msg);
       } else {
-        setLoginError("Login failed. Please check your credentials."); // More specific generic message
+        setLoginError("Login failed. Please check your credentials.");
       }
     }
   };
@@ -112,7 +115,7 @@ const AuthCard = () => {
             icon={<img src={UserIcon} alt="User Icon" className="w-7 h-6" />}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required // Add required attribute for basic browser validation
+            required
           />
         </div>
         <div className="mt-4 mb-4">
@@ -123,12 +126,12 @@ const AuthCard = () => {
             icon={<img src={LockIcon} alt="Lock Icon" className="w-6 h-6" />}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required // Add required attribute
+            required
           />
         </div>
         <p className="text-sm text-black mb-4">
           Don't have an account?{" "}
-          <Link to="/StudentRegister" className="text-blue-500 cursor-pointer hover:underline"> {/* Make it clear it's a Link */}
+          <Link to="/StudentRegister" className="text-blue-500 cursor-pointer hover:underline">
             Register
           </Link>
         </p>
