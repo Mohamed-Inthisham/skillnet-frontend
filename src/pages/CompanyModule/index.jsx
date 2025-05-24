@@ -1234,9 +1234,9 @@ const CompanyModulePage = () => {
         </section>
 
         {/* Certificate Section */}
-        <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative">
+        {/* <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative"> */}
            {/* ... (Your existing Certificate Section JSX) ... */}
-           <h2 className="text-xl font-bold text-gray-800 mb-4">Claim Your Course Certificate</h2>
+           {/* <h2 className="text-xl font-bold text-gray-800 mb-4">Claim Your Course Certificate</h2>
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg shadow-sm">
             <div className="flex items-center">
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
@@ -1245,12 +1245,12 @@ const CompanyModulePage = () => {
             </div>
             <FaCaretDown className="text-blue-500 mr-2" />
           </div>
-        </section>
+        </section> */}
 
         {/* Job Application Insights Section */}
-        <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative">
+        {/* <section className="mb-10 bg-white p-8 rounded-lg shadow-md relative"> */}
            {/* ... (Your existing Job Application Insights Section JSX) ... */}
-           <h2 className="text-xl font-bold text-gray-800 mb-4">Job Application Insights (For Students)</h2>
+           {/* <h2 className="text-xl font-bold text-gray-800 mb-4">Job Application Insights (For Students)</h2>
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg shadow-sm cursor-pointer">
             <div className="flex items-center">
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4"><FaUpload className="text-blue-800 text-xl" /></div>
@@ -1258,7 +1258,7 @@ const CompanyModulePage = () => {
             </div>
             <FaCaretDown className="text-blue-500 mr-2" />
           </div>
-        </section>
+        </section> */}
       </main>
       <Footer />
     </div>
