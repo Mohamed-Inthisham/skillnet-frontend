@@ -120,7 +120,7 @@ const CompanySidebar = () => {
     { name: "Courses", path: "/CompanyCourses", icon: <FaBookOpen /> },
     { name: "Students", path: "/CompanyStudents", icon: <FaUsers /> },
     { name: "Recruitment", path: "/CompanyRecruitment", icon: <FaBriefcase /> },
-    { name: "Settings", path: "*", icon: <FaCog /> }, // Consider a specific path like /CompanySettings
+    //{ name: "Settings", path: "*", icon: <FaCog /> }, // Consider a specific path like /CompanySettings
   ];
 
   const socialLinks = [
