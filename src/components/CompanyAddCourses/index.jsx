@@ -252,7 +252,7 @@ const AddCourses = () => {
           variant="outline"
           className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white"
         />
-        <Link to="/Home">
+        <Link to="/CompanyCourses">
           <Button
             text="Finish"
             className="bg-blue-600 hover:bg-blue-700 cursor-pointer"

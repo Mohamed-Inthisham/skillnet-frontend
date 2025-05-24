@@ -259,7 +259,7 @@ const CompanyCourses = () => {
     { label: "Fluency Test", path: '/CompanyAddFluencyTests', icon: <FaClipboardList /> }, // Changed icon
     { label: "Quiz (MCQ)", path: '/CompanyAddQuizzes', icon: <FaChalkboardTeacher /> }, // Changed icon
     { label: "Exam (Descriptive)", path: '/CompanyAddDescriptiveQuizzes', icon: <FaClipboardList /> }, // Kept as clipboard for exam
-    { label: "Certificate", path: '/CompanyAddCertifications', icon: <FaCertificate /> },
+    // { label: "Certificate", path: '/CompanyAddCertifications', icon: <FaCertificate /> },
   ];
 
   const handleRowClick = (courseId) => {
