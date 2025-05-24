@@ -1,13 +1,13 @@
 import React from "react";
 import CompanySidebar from "../../components/CompanySidebar";
 import CompanyDashboard from "../../components/CompanyDashboard";
-import CompanyHeader from "../../layout/CompanyHeader";
+import CommonHeader from "../../layout/CommonHeader";
 import CompanyRecruitment from "../../components/CompanyRecruitment";
 
 const CompanyRecruitmnetPage = () => {
   return (
     <>
-      <CompanyHeader />
+      <CommonHeader />
         <div className="flex h-screen">
           <CompanySidebar />
               
