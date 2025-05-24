@@ -24,12 +24,12 @@
 import React from "react";
 import CompanySidebar from "../../components/CompanySidebar"; // Corrected path if needed
 import CompanyDashboard from "../../components/CompanyDashboard"; // Corrected path if needed
-import CompanyHeader from "../../layout/CompanyHeader"; // Corrected path if needed
+import CommonHeader from "../../layout/CommonHeader"; // Corrected path if needed
 
 const CompanyDashboardPage = () => {
   return (
     <div className="flex flex-col h-screen overflow-hidden"> {/* (A) Outermost container: full height, flex column */}
-      <CompanyHeader /> {/* (B) Header takes its natural height */}
+      <CommonHeader /> {/* (B) Header takes its natural height */}
       
       <div className="flex flex-1 overflow-hidden"> {/* (C) Main area: flex row, takes remaining height, hides its overflow */}
         <CompanySidebar /> {/* (D) Sidebar takes its natural width */}

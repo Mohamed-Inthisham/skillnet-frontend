@@ -1,12 +1,12 @@
 import React from "react";
 import CompanySidebar from "../../components/CompanySidebar";
 import CompanyCourses from "../../components/CompanyCourses";
-import CompanyHeader from "../../layout/CompanyHeader";
+import CommonHeader from "../../layout/CommonHeader";
 
 const CompanyCoursesPage = () => {
   return (
     <>
-      <CompanyHeader />
+      <CommonHeader />
         <div className="flex h-screen">
           <CompanySidebar />
               
