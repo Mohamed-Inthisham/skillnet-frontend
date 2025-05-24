@@ -904,12 +904,277 @@
 
 
 
+// import React, { useState, useEffect } from "react";
+// // import CompanyHeader from "../../layout/CompanyHeader"; // Assuming you might have this or similar
+
+// const API_BASE_URL = "http://localhost:5001";
+
+// // Helper to get the JWT token from localStorage (similar to Students.js)
+// const getAuthToken = () => localStorage.getItem("accessToken");
+
+// const CompanyDashboard = () => {
+//   const [courses, setCourses] = useState([]);
+//   const [loading, setLoading] = useState(true); // For courses and initial page load
+//   const [error, setError] = useState(null); // For general/course errors
+//   const [companyName, setCompanyName] = useState("");
+
+//   // New states for "Total Students"
+//   const [totalUniqueStudents, setTotalUniqueStudents] = useState(0);
+//   const [loadingStudents, setLoadingStudents] = useState(true); // Specifically for student count
+
+//   useEffect(() => {
+//     const storedCompanyName = localStorage.getItem("companyName");
+
+//     if (storedCompanyName) {
+//       setCompanyName(storedCompanyName); // This will trigger the second useEffect for students
+//     } else {
+//       setError("Company name not found. Please log in again as a company representative.");
+//       setLoading(false); // Stop main loading
+//       setLoadingStudents(false); // Stop student specific loading
+//       return;
+//     }
+
+//     const fetchCompanyCourses = async () => {
+//       // setLoading(true); // Main loading is already true initially
+//       // setError(null); // Reset error before new fetch if needed, but usually handled by initial state
+//       try {
+//         const response = await fetch(
+//           `${API_BASE_URL}/companies/${encodeURIComponent(storedCompanyName)}/courses`
+//         );
+//         if (!response.ok) {
+//           const errData = await response.json().catch(() => ({ msg: "Failed to parse course error response" }));
+//           throw new Error(errData.msg || `HTTP error! status: ${response.status}`);
+//         }
+//         const data = await response.json();
+//         setCourses(data || []);
+//       } catch (err) {
+//         console.error("Failed to fetch company courses:", err);
+//         setError(err.message || "Failed to load courses."); // Set main error
+//         setCourses([]);
+//       } finally {
+//         setLoading(false); // Stop main loading (for courses)
+//       }
+//     };
+
+//     if (storedCompanyName) { // Ensure company name was found before fetching courses
+//         fetchCompanyCourses();
+//     }
+//     // No explicit return here, effect completes.
+//   }, []); // Runs once on mount to get company name and courses
+
+//   // New useEffect to fetch total unique students, depends on companyName
+//   useEffect(() => {
+//     const fetchUniqueStudentCount = async () => {
+//       // This check is crucial: only proceed if companyName is actually set.
+//       if (!companyName) {
+//         setLoadingStudents(false); // No companyName, so nothing to load students for.
+//         return;
+//       }
+
+//       setLoadingStudents(true); // Start loading for student count
+//       const token = getAuthToken();
+
+//       if (!token) {
+//         console.warn("Authentication token not found. Cannot fetch student count.");
+//         setTotalUniqueStudents("N/A"); // Indicate token issue or that data can't be fetched
+//         setLoadingStudents(false);
+//         return;
+//       }
+
+//       try {
+//         const response = await fetch(
+//           `${API_BASE_URL}/companies/${encodeURIComponent(companyName)}/enrolled-students`,
+//           {
+//             method: "GET",
+//             headers: {
+//               "Authorization": `Bearer ${token}`,
+//               "Content-Type": "application/json",
+//             },
+//           }
+//         );
+
+//         if (!response.ok) {
+//           const errorData = await response.json().catch(() => ({ msg: "Failed to parse student enrollment error" }));
+//           throw new Error(errorData.msg || `HTTP error fetching student enrollments: ${response.status}`);
+//         }
+
+//         const enrollmentsData = await response.json();
+//         if (Array.isArray(enrollmentsData)) {
+//           // Calculate unique students based on email
+//           const uniqueStudentEmails = new Set(enrollmentsData.map(enrollment => enrollment.student_email).filter(email => email)); // Filter out null/undefined emails
+//           setTotalUniqueStudents(uniqueStudentEmails.size);
+//         } else {
+//           console.error("Unexpected format for enrollments data:", enrollmentsData);
+//           setTotalUniqueStudents("Error"); // Data format issue
+//         }
+//       } catch (err) {
+//         console.error("Failed to fetch or process unique student count:", err);
+//         setTotalUniqueStudents("Error"); // Indicate fetch/processing error
+//       } finally {
+//         setLoadingStudents(false); // Stop student specific loading
+//       }
+//     };
+
+//     // Only call fetch if companyName has a value.
+//     if (companyName) {
+//       fetchUniqueStudentCount();
+//     } else {
+//       // If companyName is still empty after the first effect might have run (e.g. not in localStorage)
+//       // ensure loadingStudents is false.
+//       setLoadingStudents(false);
+//     }
+//   }, [companyName]); // Runs when companyName is set or changes
+
+//   const placeholderImageSrc = "https://placehold.co/400x250?text=No+Course+Image";
+
+//   // Overall loading state for the dashboard (primarily for courses and initial company name check)
+//   if (loading) {
+//     return (
+//       <div className="flex-1 p-6 flex items-center justify-center">
+//         <div className="text-center text-gray-700">
+//           Loading Dashboard...
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   // If a critical error occurred (e.g., company name not found, or major course fetch issue)
+//   if (error) {
+//     return (
+//       <div className="flex-1 p-6 flex items-center justify-center">
+//         <div className="text-center text-red-600 bg-red-100 p-4 rounded-lg shadow">
+//           <h3 className="font-semibold text-lg mb-2">Oops! Something went wrong.</h3>
+//           <p>{error}</p>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   // Prepare student count display string
+//   let studentCountDisplay;
+//   if (loadingStudents) {
+//     studentCountDisplay = "...";
+//   } else if (typeof totalUniqueStudents === 'number') {
+//     studentCountDisplay = totalUniqueStudents;
+//   } else { // Handles "N/A" or "Error" strings if set
+//     studentCountDisplay = totalUniqueStudents;
+//   }
+
+//   return (
+//     <div className="p-6">
+//       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+//         <div className="bg-white p-6 rounded-xl shadow-lg text-center transform hover:scale-105 transition-transform duration-300">
+//           <h2 className="text-gray-500 text-sm font-medium uppercase tracking-wider">No. of Courses</h2>
+//           {/* `loading` is false here, so courses array is populated or empty */}
+//           <p className="text-3xl font-bold text-blue-600 mt-2">{courses.length}</p>
+//         </div>
+//         <div className="bg-white p-6 rounded-xl shadow-lg text-center transform hover:scale-105 transition-transform duration-300">
+//           <h2 className="text-gray-500 text-sm font-medium uppercase tracking-wider">Total Students</h2>
+//           <p className="text-3xl font-bold text-blue-600 mt-2">
+//             {studentCountDisplay}
+//           </p>
+//         </div>
+//         <div className="bg-white p-6 rounded-xl shadow-lg text-center transform hover:scale-105 transition-transform duration-300">
+//           <h2 className="text-gray-500 text-sm font-medium uppercase tracking-wider">Active JDs</h2>
+//           <p className="text-3xl font-bold text-blue-600 mt-2">12 <span className="text-sm text-gray-500">(Static)</span></p>
+//         </div>
+//       </div>
+
+//       <div className="mb-8">
+//         <div className="flex justify-between items-center mb-6">
+//           <h2 className="text-2xl font-semibold text-gray-800">Your Courses - {companyName || "Company"}</h2>
+//         </div>
+
+//         {/* Conditional rendering for courses based on `courses` array, `loading` is already false here */}
+//         {courses.length > 0 ? (
+//           <div className="overflow-x-auto pb-4 -mb-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 scrollbar-thumb-rounded-full">
+//             <div className="flex flex-nowrap gap-6 py-1">
+//               {courses.map((course) => (
+//                 <div
+//                   key={course._id}
+//                   className="min-w-[280px] w-[280px] bg-white rounded-xl shadow-lg overflow-hidden flex flex-col group transform hover:-translate-y-1 transition-all duration-300"
+//                 >
+//                   <img
+//                     src={course.course_image ? `${API_BASE_URL}${course.course_image}` : `${placeholderImageSrc}&txt=${encodeURIComponent(course.course_name)}`}
+//                     alt={course.course_name}
+//                     className="w-full h-40 object-cover"
+//                   />
+//                   <div className="p-4 flex flex-col flex-grow">
+//                     <h3 className="text-base font-semibold text-gray-900 mb-1 truncate group-hover:text-blue-600 transition-colors" title={course.course_name}>
+//                       {course.course_name}
+//                     </h3>
+//                     <p className="text-xs text-gray-600 mb-3 line-clamp-2 flex-grow" title={course.introduction}>
+//                       {course.introduction || "No introduction provided."}
+//                     </p>
+//                     <div className="mt-auto pt-2 border-t border-gray-200">
+//                       <div className="flex justify-between items-center text-xs text-gray-500">
+//                         <span>
+//                           {course.lesson_count !== undefined ? `${course.lesson_count} Lessons` : 'Lessons: N/A'}
+//                         </span>
+//                         <span className="font-medium bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">
+//                           Level: {course.level || "N/A"}
+//                         </span>
+//                       </div>
+//                     </div>
+//                   </div>
+//                 </div>
+//               ))}
+//             </div>
+//           </div>
+//         ) : (
+//           <div className="text-center py-12 bg-white rounded-xl shadow-lg">
+//             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+//               <path vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+//             </svg>
+//             <h3 className="mt-2 text-lg font-medium text-gray-900">No courses yet for {companyName || "your company"}</h3>
+//             <p className="mt-1 text-sm text-gray-500">Get started by creating a new course.</p>
+//           </div>
+//         )}
+//       </div>
+
+//       <div>
+//         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Course Tracking <span className="text-sm text-gray-500">(Static Example)</span></h2>
+//         <div className="overflow-x-auto bg-white rounded-xl shadow-lg">
+//           <table className="w-full min-w-max">
+//             <thead className="bg-gray-50">
+//                 <tr>
+//                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
+//                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completed</th>
+//                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+//                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applicants</th>
+//                 </tr>
+//               </thead>
+//               <tbody className="bg-white divide-y divide-gray-200">
+//                 {[
+//                   { name: 'Introduction to Java', completed: '12/18', duration: '47h 22m', applicants: 7 },
+//                   { name: 'Advanced Python Programming', completed: '15/20', duration: '60h 10m', applicants: 5 },
+//                   { name: 'Web Development Bootcamp', completed: '8/25', duration: '120h 00m', applicants: 12 },
+//                 ].map((item, index) => (
+//                   <tr key={index} className="hover:bg-gray-50 transition-colors">
+//                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.name}</td>
+//                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.completed}</td>
+//                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.duration}</td>
+//                     <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-semibold">{item.applicants}
+//                     </td>
+//                   </tr>
+//                 ))}
+//               </tbody>
+//           </table>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default CompanyDashboard;
+
+
 import React, { useState, useEffect } from "react";
 // import CompanyHeader from "../../layout/CompanyHeader"; // Assuming you might have this or similar
 
 const API_BASE_URL = "http://localhost:5001";
 
-// Helper to get the JWT token from localStorage (similar to Students.js)
+// Helper to get the JWT token from localStorage
 const getAuthToken = () => localStorage.getItem("accessToken");
 
 const CompanyDashboard = () => {
@@ -918,9 +1183,13 @@ const CompanyDashboard = () => {
   const [error, setError] = useState(null); // For general/course errors
   const [companyName, setCompanyName] = useState("");
 
-  // New states for "Total Students"
+  // States for "Total Students"
   const [totalUniqueStudents, setTotalUniqueStudents] = useState(0);
-  const [loadingStudents, setLoadingStudents] = useState(true); // Specifically for student count
+  const [loadingStudents, setLoadingStudents] = useState(true);
+
+  // New states for "Active JDs"
+  const [jdCount, setJdCount] = useState(0);
+  const [loadingJdCount, setLoadingJdCount] = useState(true);
 
   useEffect(() => {
     const storedCompanyName = localStorage.getItem("companyName");
@@ -929,14 +1198,14 @@ const CompanyDashboard = () => {
       setCompanyName(storedCompanyName); // This will trigger the second useEffect for students
     } else {
       setError("Company name not found. Please log in again as a company representative.");
-      setLoading(false); // Stop main loading
-      setLoadingStudents(false); // Stop student specific loading
+      setLoading(false);
+      setLoadingStudents(false);
+      setLoadingJdCount(false); // Also stop JD loading
+      setJdCount(0); // Set a default/error value for JD count
       return;
     }
 
     const fetchCompanyCourses = async () => {
-      // setLoading(true); // Main loading is already true initially
-      // setError(null); // Reset error before new fetch if needed, but usually handled by initial state
       try {
         const response = await fetch(
           `${API_BASE_URL}/companies/${encodeURIComponent(storedCompanyName)}/courses`
@@ -949,38 +1218,33 @@ const CompanyDashboard = () => {
         setCourses(data || []);
       } catch (err) {
         console.error("Failed to fetch company courses:", err);
-        setError(err.message || "Failed to load courses."); // Set main error
+        setError(err.message || "Failed to load courses.");
         setCourses([]);
       } finally {
-        setLoading(false); // Stop main loading (for courses)
+        setLoading(false);
       }
     };
 
-    if (storedCompanyName) { // Ensure company name was found before fetching courses
+    if (storedCompanyName) {
         fetchCompanyCourses();
     }
-    // No explicit return here, effect completes.
   }, []); // Runs once on mount to get company name and courses
 
-  // New useEffect to fetch total unique students, depends on companyName
+  // useEffect to fetch total unique students, depends on companyName
   useEffect(() => {
     const fetchUniqueStudentCount = async () => {
-      // This check is crucial: only proceed if companyName is actually set.
       if (!companyName) {
-        setLoadingStudents(false); // No companyName, so nothing to load students for.
-        return;
-      }
-
-      setLoadingStudents(true); // Start loading for student count
-      const token = getAuthToken();
-
-      if (!token) {
-        console.warn("Authentication token not found. Cannot fetch student count.");
-        setTotalUniqueStudents("N/A"); // Indicate token issue or that data can't be fetched
         setLoadingStudents(false);
         return;
       }
-
+      setLoadingStudents(true);
+      const token = getAuthToken();
+      if (!token) {
+        console.warn("Authentication token not found. Cannot fetch student count.");
+        setTotalUniqueStudents("N/A");
+        setLoadingStudents(false);
+        return;
+      }
       try {
         const response = await fetch(
           `${API_BASE_URL}/companies/${encodeURIComponent(companyName)}/enrolled-students`,
@@ -992,42 +1256,97 @@ const CompanyDashboard = () => {
             },
           }
         );
-
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ msg: "Failed to parse student enrollment error" }));
           throw new Error(errorData.msg || `HTTP error fetching student enrollments: ${response.status}`);
         }
-
         const enrollmentsData = await response.json();
         if (Array.isArray(enrollmentsData)) {
-          // Calculate unique students based on email
-          const uniqueStudentEmails = new Set(enrollmentsData.map(enrollment => enrollment.student_email).filter(email => email)); // Filter out null/undefined emails
+          const uniqueStudentEmails = new Set(enrollmentsData.map(enrollment => enrollment.student_email).filter(email => email));
           setTotalUniqueStudents(uniqueStudentEmails.size);
         } else {
           console.error("Unexpected format for enrollments data:", enrollmentsData);
-          setTotalUniqueStudents("Error"); // Data format issue
+          setTotalUniqueStudents("Error");
         }
       } catch (err) {
         console.error("Failed to fetch or process unique student count:", err);
-        setTotalUniqueStudents("Error"); // Indicate fetch/processing error
+        setTotalUniqueStudents("Error");
       } finally {
-        setLoadingStudents(false); // Stop student specific loading
+        setLoadingStudents(false);
       }
     };
-
-    // Only call fetch if companyName has a value.
     if (companyName) {
       fetchUniqueStudentCount();
     } else {
-      // If companyName is still empty after the first effect might have run (e.g. not in localStorage)
-      // ensure loadingStudents is false.
       setLoadingStudents(false);
     }
   }, [companyName]); // Runs when companyName is set or changes
 
+
+  // New useEffect to fetch JD count (runs once on mount if token exists)
+  useEffect(() => {
+    const fetchJdData = async () => {
+      setLoadingJdCount(true);
+      const token = getAuthToken();
+
+      if (!token) {
+        console.warn("Authentication token not found. Cannot fetch JD count.");
+        setJdCount("N/A"); // Or 0, or specific error string
+        setLoadingJdCount(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/jds/my`, { // Uses /jds/my which is token-based
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ msg: "Failed to parse JD fetch error" }));
+          throw new Error(errorData.msg || `HTTP error fetching JDs: ${response.status}`);
+        }
+
+        const jdsData = await response.json();
+        if (Array.isArray(jdsData)) {
+          // Assuming all JDs returned are considered "active" for the company,
+          // or you can filter here if JDs have a 'status' field:
+          // const activeJds = jdsData.filter(jd => jd.status === 'active');
+          // setJdCount(activeJds.length);
+          setJdCount(jdsData.length);
+        } else {
+          console.error("Unexpected format for JDs data:", jdsData);
+          setJdCount("Error"); // Indicate data format issue
+        }
+      } catch (err) {
+        console.error("Failed to fetch or process JD count:", err);
+        setJdCount("Error"); // Indicate fetch/processing error
+      } finally {
+        setLoadingJdCount(false);
+      }
+    };
+
+    // Only attempt to fetch if the initial company check didn't immediately fail
+    // The `error` state reflects if `storedCompanyName` was missing.
+    // And ensure token exists for this specific fetch.
+    if (!error && getAuthToken()) {
+      fetchJdData();
+    } else if (error) { // If there was an initial error (like companyName not found)
+        setLoadingJdCount(false);
+        setJdCount(0); // Or "N/A"
+    } else { // No error, but also no token
+        setLoadingJdCount(false);
+        setJdCount("N/A");
+    }
+  }, [error]); // Re-run if the main error state changes, or runs once if no error initially.
+               // This ensures it doesn't try to fetch if the prerequisite (company context/token) is missing.
+
+
   const placeholderImageSrc = "https://placehold.co/400x250?text=No+Course+Image";
 
-  // Overall loading state for the dashboard (primarily for courses and initial company name check)
   if (loading) {
     return (
       <div className="flex-1 p-6 flex items-center justify-center">
@@ -1038,7 +1357,6 @@ const CompanyDashboard = () => {
     );
   }
 
-  // If a critical error occurred (e.g., company name not found, or major course fetch issue)
   if (error) {
     return (
       <div className="flex-1 p-6 flex items-center justify-center">
@@ -1056,8 +1374,18 @@ const CompanyDashboard = () => {
     studentCountDisplay = "...";
   } else if (typeof totalUniqueStudents === 'number') {
     studentCountDisplay = totalUniqueStudents;
-  } else { // Handles "N/A" or "Error" strings if set
-    studentCountDisplay = totalUniqueStudents;
+  } else {
+    studentCountDisplay = totalUniqueStudents; // "N/A" or "Error"
+  }
+
+  // Prepare JD count display string
+  let jdCountDisplay;
+  if (loadingJdCount) {
+    jdCountDisplay = "...";
+  } else if (typeof jdCount === 'number') {
+    jdCountDisplay = jdCount;
+  } else {
+    jdCountDisplay = jdCount; // "N/A" or "Error"
   }
 
   return (
@@ -1065,7 +1393,6 @@ const CompanyDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <div className="bg-white p-6 rounded-xl shadow-lg text-center transform hover:scale-105 transition-transform duration-300">
           <h2 className="text-gray-500 text-sm font-medium uppercase tracking-wider">No. of Courses</h2>
-          {/* `loading` is false here, so courses array is populated or empty */}
           <p className="text-3xl font-bold text-blue-600 mt-2">{courses.length}</p>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-lg text-center transform hover:scale-105 transition-transform duration-300">
@@ -1076,7 +1403,9 @@ const CompanyDashboard = () => {
         </div>
         <div className="bg-white p-6 rounded-xl shadow-lg text-center transform hover:scale-105 transition-transform duration-300">
           <h2 className="text-gray-500 text-sm font-medium uppercase tracking-wider">Active JDs</h2>
-          <p className="text-3xl font-bold text-blue-600 mt-2">12 <span className="text-sm text-gray-500">(Static)</span></p>
+          <p className="text-3xl font-bold text-blue-600 mt-2">
+            {jdCountDisplay}
+          </p>
         </div>
       </div>
 
@@ -1084,8 +1413,6 @@ const CompanyDashboard = () => {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold text-gray-800">Your Courses - {companyName || "Company"}</h2>
         </div>
-
-        {/* Conditional rendering for courses based on `courses` array, `loading` is already false here */}
         {courses.length > 0 ? (
           <div className="overflow-x-auto pb-4 -mb-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 scrollbar-thumb-rounded-full">
             <div className="flex flex-nowrap gap-6 py-1">
