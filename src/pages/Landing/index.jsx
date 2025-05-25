@@ -5,6 +5,7 @@ import image from "../../../src/assets/image.webp";
 import Button from "../../components/Button";
 import Footer from "../../layout/Footer";
 import { Link } from "react-router-dom";
+import logo from "../../assets/Logo.webp";
 const Landing = () => {
   const partners = [
     { logo: "/src/assets/Ellipse 1.webp", name: "IFS" },
@@ -16,7 +17,11 @@ const Landing = () => {
 
   return (
     <>
-      <CommonHeader />
+       <header className="flex items-center justify-between px-8 py-2 mb-2 border-b-2 border-gray-200 ml-[100px] mr-[100px] font-[Poppins">
+            <div className="flex items-center">
+                <img src={logo} alt="SkillNet Logo" className="h-8 cursor-pointer" />
+            </div>
+            </header>
       <section className="bg-neutral-200  rounded-2xl flex flex-col md:flex-row items-center justify-between gap-8 mr-[100px] ml-[100px]">
         <div className="max-w-lg md:ml-28 font-[Poppins] tracking-wider">
           <h2 className="text-4xl font-bold leading-normal mt-16 [word-spacing:6px]">
