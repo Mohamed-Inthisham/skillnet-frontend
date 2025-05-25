@@ -1,5 +1,5 @@
 import React from 'react'
-import CompanyHeader from "../../layout/CompanyHeader";
+import CompanyHeader from "../../layout/CommonHeader";
 import CompanySidebar from "../../components/CompanySidebar";
 import CompanyAddCoursesComponent from "../../components/CompanyAddCourses";
 

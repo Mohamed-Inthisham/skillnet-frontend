@@ -60,12 +60,12 @@ const UserHeader = () => {
 
       {/* Navigation */}
       <nav className="flex space-x-20 text-gray-600 text-sm ml-[300px]">
-        <a href="/CompanyDashboard" className="hover:text-blue-500">
+        {/* <a href="/CompanyDashboard" className="hover:text-blue-500">
           Dashboard
-        </a>
-        <a href="/ContactUs" className="hover:text-blue-500">
+        </a> */}
+        {/* <a href="/ContactUs" className="hover:text-blue-500">
           Contact Us
-        </a>
+        </a> */}
       </nav>
 
       {/* User Icon - Dropdown */}
