@@ -3,9 +3,9 @@ import { Dialog, Transition } from "@headlessui/react";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useNavigate, useLocation } from "react-router-dom";
 import ExamMonitorLayout from "../../layout/ExamMonitor";
-import Button from "../../components/Button"; // Assuming you have this Button component
+import Button from "../../components/Button"; 
 import lamejs from '@breezystack/lamejs';
-import { jwtDecode } from "jwt-decode"; // For getting email from JWT
+import { jwtDecode } from "jwt-decode"; 
 
 const TOTAL_RECORDING_TIME_SECONDS = 120;
 const MINIMUM_RECORDING_DURATION_FOR_SUBMIT_SECONDS = 5;
